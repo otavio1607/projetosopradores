@@ -29,7 +29,8 @@ export function isValidDate(dateStr: string): boolean {
   if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
   if (month < 1 || month > 12) return false;
   if (day < 1 || day > 31) return false;
-  return true;
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
 
 export function isValidEquipmentId(id: string): boolean {

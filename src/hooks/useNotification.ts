@@ -12,7 +12,7 @@ export function useNotification() {
     maintenanceType?: string
   ) => {
     const notification: Notification = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+      id: crypto.randomUUID(),
       type,
       title,
       message,

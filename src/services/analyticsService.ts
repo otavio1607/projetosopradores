@@ -1,6 +1,7 @@
 import { Equipment } from '@/types/equipment';
 import { AnalyticsDashboard, KPI, ComplianceByService, MaintenanceTrend } from '@/types/analytics';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function calculateKPIs(equipment: Equipment[]): KPI[] {
   const total = equipment.length;
@@ -79,7 +80,7 @@ export function calculateTrends(equipment: Equipment[]): MaintenanceTrend[] {
     const monthDate = subMonths(now, i);
     const monthStart = startOfMonth(monthDate);
     const monthEnd = endOfMonth(monthDate);
-    const monthLabel = format(monthDate, 'MMM/yy');
+    const monthLabel = format(monthDate, 'MMM/yy', { locale: ptBR });
 
     let completed = 0;
     let overdue = 0;
