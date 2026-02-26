@@ -36,11 +36,11 @@ function getStatus(daysRemaining: number | null): 'ok' | 'warning' | 'critical' 
 }
 
 function getOverallStatus(manutencoes: Equipment['manutencoes']): 'ok' | 'warning' | 'critical' | 'overdue' {
-  const hasOverdue = manutencoes.some(m => m.status === 'overdue');
+  const hasOverdue = manutencoes.some(maintenanceRecord => maintenanceRecord.status === 'overdue');
   if (hasOverdue) return 'overdue';
-  const hasCritical = manutencoes.some(m => m.status === 'critical');
+  const hasCritical = manutencoes.some(maintenanceRecord => maintenanceRecord.status === 'critical');
   if (hasCritical) return 'critical';
-  const hasWarning = manutencoes.some(m => m.status === 'warning');
+  const hasWarning = manutencoes.some(maintenanceRecord => maintenanceRecord.status === 'warning');
   if (hasWarning) return 'warning';
   return 'ok';
 }
@@ -124,16 +124,16 @@ export default function Index() {
     newDate: Date | null
   ) => {
     setEquipment(prevEquipment => {
-      const updatedEquipment = prevEquipment.map(equip => {
-        if (equip.id !== equipmentId) return equip;
+      const updatedEquipment = prevEquipment.map(equipmentItem => {
+        if (equipmentItem.id !== equipmentId) return equipmentItem;
 
         // Update the specific maintenance record
-        const updatedManutencoes = equip.manutencoes.map(m => {
-          if (m.typeId !== typeId) return m;
+        const updatedManutencoes = equipmentItem.manutencoes.map(maintenanceRecord => {
+          if (maintenanceRecord.typeId !== typeId) return maintenanceRecord;
           
           const diasRestantes = calculateDaysRemaining(newDate);
           return {
-            ...m,
+            ...maintenanceRecord,
             proximaManutencao: newDate,
             diasRestantes,
             status: getStatus(diasRestantes),
@@ -141,22 +141,22 @@ export default function Index() {
         });
 
         // Recalculate overall status
-        const validManutencoes = updatedManutencoes.filter(m => m.proximaManutencao !== null);
+        const validManutencoes = updatedManutencoes.filter(maintenanceRecord => maintenanceRecord.proximaManutencao !== null);
         const proximaManutencaoGeral = validManutencoes.length > 0
-          ? validManutencoes.reduce((min, m) => 
-              !min || (m.proximaManutencao && m.proximaManutencao < min) ? m.proximaManutencao : min, 
+          ? validManutencoes.reduce((earliestDate, maintenanceRecord) => 
+              !earliestDate || (maintenanceRecord.proximaManutencao && maintenanceRecord.proximaManutencao < earliestDate) ? maintenanceRecord.proximaManutencao : earliestDate, 
               null as Date | null
             )
           : null;
         const diasRestantesGeral = validManutencoes.length > 0
-          ? validManutencoes.reduce((min, m) => 
-              m.diasRestantes !== null && (min === null || m.diasRestantes < min) ? m.diasRestantes : min, 
+          ? validManutencoes.reduce((minDays, maintenanceRecord) => 
+              maintenanceRecord.diasRestantes !== null && (minDays === null || maintenanceRecord.diasRestantes < minDays) ? maintenanceRecord.diasRestantes : minDays, 
               null as number | null
             )
           : null;
 
         return {
-          ...equip,
+          ...equipmentItem,
           manutencoes: updatedManutencoes,
           statusGeral: getOverallStatus(updatedManutencoes),
           proximaManutencaoGeral,
@@ -181,7 +181,7 @@ export default function Index() {
     equipmentId: string,
     typeId: MaintenanceTypeId
   ) => {
-    const maintenanceType = MAINTENANCE_TYPES.find(t => t.id === typeId);
+    const maintenanceType = MAINTENANCE_TYPES.find(maintenanceType => maintenanceType.id === typeId);
     if (!maintenanceType) return;
 
     const today = new Date();

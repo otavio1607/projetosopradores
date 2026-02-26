@@ -18,15 +18,15 @@ export function MaintenanceCalendar({ equipment }: MaintenanceCalendarProps) {
   const getMaintenanceForDate = (date: Date) => {
     const results: { equipment: Equipment; maintenance: string; status: string }[] = [];
     
-    equipment.forEach(e => {
-      e.manutencoes.forEach(m => {
-        if (m.proximaManutencao) {
-          const maintDate = new Date(m.proximaManutencao);
+    equipment.forEach(equipmentItem => {
+      equipmentItem.manutencoes.forEach(maintenanceRecord => {
+        if (maintenanceRecord.proximaManutencao) {
+          const maintDate = new Date(maintenanceRecord.proximaManutencao);
           if (maintDate.toDateString() === date.toDateString()) {
             results.push({
-              equipment: e,
-              maintenance: m.label,
-              status: m.status,
+              equipment: equipmentItem,
+              maintenance: maintenanceRecord.label,
+              status: maintenanceRecord.status,
             });
           }
         }
@@ -38,13 +38,13 @@ export function MaintenanceCalendar({ equipment }: MaintenanceCalendarProps) {
 
   // Get overdue maintenance records
   const overdueRecords: { tag: string; service: string; days: number }[] = [];
-  equipment.forEach(e => {
-    e.manutencoes.forEach(m => {
-      if (m.status === 'overdue' && m.diasRestantes !== null) {
+  equipment.forEach(equipmentItem => {
+    equipmentItem.manutencoes.forEach(maintenanceRecord => {
+      if (maintenanceRecord.status === 'overdue' && maintenanceRecord.diasRestantes !== null) {
         overdueRecords.push({
-          tag: e.tag,
-          service: m.label,
-          days: Math.abs(m.diasRestantes),
+          tag: equipmentItem.tag,
+          service: maintenanceRecord.label,
+          days: Math.abs(maintenanceRecord.diasRestantes),
         });
       }
     });
@@ -52,14 +52,14 @@ export function MaintenanceCalendar({ equipment }: MaintenanceCalendarProps) {
 
   // Get count of maintenance by type
   const maintenanceCounts = MAINTENANCE_TYPES.map(type => {
-    const overdue = equipment.filter(e => 
-      e.manutencoes.find(m => m.typeId === type.id && m.status === 'overdue')
+    const overdue = equipment.filter(equipmentItem => 
+      equipmentItem.manutencoes.find(maintenanceRecord => maintenanceRecord.typeId === type.id && maintenanceRecord.status === 'overdue')
     ).length;
-    const critical = equipment.filter(e => 
-      e.manutencoes.find(m => m.typeId === type.id && m.status === 'critical')
+    const critical = equipment.filter(equipmentItem => 
+      equipmentItem.manutencoes.find(maintenanceRecord => maintenanceRecord.typeId === type.id && maintenanceRecord.status === 'critical')
     ).length;
-    const warning = equipment.filter(e => 
-      e.manutencoes.find(m => m.typeId === type.id && m.status === 'warning')
+    const warning = equipment.filter(equipmentItem => 
+      equipmentItem.manutencoes.find(maintenanceRecord => maintenanceRecord.typeId === type.id && maintenanceRecord.status === 'warning')
     ).length;
     
     return {

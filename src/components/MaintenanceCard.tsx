@@ -17,7 +17,7 @@ interface MaintenanceCardProps {
 }
 
 export function MaintenanceCard({ 
-  maintenance: m, 
+  maintenance, 
   equipmentId, 
   onDateChange,
   onComplete,
@@ -25,19 +25,19 @@ export function MaintenanceCard({
 }: MaintenanceCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    m.proximaManutencao ?? undefined
+    maintenance.proximaManutencao ?? undefined
   );
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
     if (date && onDateChange) {
-      onDateChange(equipmentId, m.typeId, date);
+      onDateChange(equipmentId, maintenance.typeId, date);
     }
     setIsOpen(false);
   };
 
-  const handleCardClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleCardClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
     if (editable) {
       setIsOpen(true);
     }
@@ -51,36 +51,36 @@ export function MaintenanceCard({
           className={cn(
             'p-3 rounded-lg border transition-all cursor-pointer group',
             'hover:ring-2 hover:ring-primary/30',
-            m.status === 'ok' && 'bg-status-ok/5 border-status-ok/20 hover:bg-status-ok/10',
-            m.status === 'warning' && 'bg-status-warning/5 border-status-warning/20 hover:bg-status-warning/10',
-            m.status === 'critical' && 'bg-status-critical/10 border-status-critical/30 hover:bg-status-critical/15',
-            m.status === 'overdue' && 'bg-status-overdue/10 border-status-overdue/30 hover:bg-status-overdue/15',
-            m.status === 'pending' && 'bg-muted/30 border-border hover:bg-muted/50'
+            maintenance.status === 'ok' && 'bg-status-ok/5 border-status-ok/20 hover:bg-status-ok/10',
+            maintenance.status === 'warning' && 'bg-status-warning/5 border-status-warning/20 hover:bg-status-warning/10',
+            maintenance.status === 'critical' && 'bg-status-critical/10 border-status-critical/30 hover:bg-status-critical/15',
+            maintenance.status === 'overdue' && 'bg-status-overdue/10 border-status-overdue/30 hover:bg-status-overdue/15',
+            maintenance.status === 'pending' && 'bg-muted/30 border-border hover:bg-muted/50'
           )}
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xs font-medium text-muted-foreground truncate" title={m.periodicidade}>
-              {m.label}
+            <span className="text-xs font-medium text-muted-foreground truncate" title={maintenance.periodicidade}>
+              {maintenance.label}
             </span>
             {editable && (
               <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
             )}
           </div>
-          {m.proximaManutencao ? (
+          {maintenance.proximaManutencao ? (
             <>
               <div className="font-mono text-sm font-semibold">
-                {m.proximaManutencao.toLocaleDateString('pt-BR')}
+                {maintenance.proximaManutencao.toLocaleDateString('pt-BR')}
               </div>
               <div className={cn(
                 'text-xs font-bold mt-1',
-                m.status === 'ok' && 'text-status-ok',
-                m.status === 'warning' && 'text-status-warning',
-                m.status === 'critical' && 'text-status-critical',
-                m.status === 'overdue' && 'text-status-overdue'
+                maintenance.status === 'ok' && 'text-status-ok',
+                maintenance.status === 'warning' && 'text-status-warning',
+                maintenance.status === 'critical' && 'text-status-critical',
+                maintenance.status === 'overdue' && 'text-status-overdue'
               )}>
-                {m.diasRestantes !== null && m.diasRestantes < 0 
-                  ? `${Math.abs(m.diasRestantes)}d atrasado` 
-                  : `${m.diasRestantes}d restantes`}
+                {maintenance.diasRestantes !== null && maintenance.diasRestantes < 0 
+                  ? `${Math.abs(maintenance.diasRestantes)}d atrasado` 
+                  : `${maintenance.diasRestantes}d restantes`}
               </div>
             </>
           ) : (
@@ -91,9 +91,9 @@ export function MaintenanceCard({
           )}
         </div>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start" onClick={e => e.stopPropagation()}>
+      <PopoverContent className="w-auto p-0" align="start" onClick={event => event.stopPropagation()}>
         <div className="p-3 border-b">
-          <p className="text-sm font-medium">{m.label}</p>
+          <p className="text-sm font-medium">{maintenance.label}</p>
           <p className="text-xs text-muted-foreground">Selecione a próxima data de manutenção</p>
         </div>
         <Calendar
@@ -105,15 +105,15 @@ export function MaintenanceCard({
           initialFocus
         />
         <div className="p-3 border-t flex flex-col gap-2">
-          {m.proximaManutencao && (m.status === 'overdue' || m.status === 'critical' || m.status === 'warning') && (
+          {maintenance.proximaManutencao && (maintenance.status === 'overdue' || maintenance.status === 'critical' || maintenance.status === 'warning') && (
             <Button 
               variant="default" 
               size="sm"
               className="w-full gap-1"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
                 if (onComplete) {
-                  onComplete(equipmentId, m.typeId);
+                  onComplete(equipmentId, maintenance.typeId);
                 }
                 setIsOpen(false);
               }}
@@ -127,21 +127,21 @@ export function MaintenanceCard({
               variant="outline" 
               size="sm" 
               className="flex-1"
-              onClick={(e) => {
-                e.stopPropagation();
+              onClick={(event) => {
+                event.stopPropagation();
                 setIsOpen(false);
               }}
             >
               Cancelar
             </Button>
-            {m.proximaManutencao && (
+            {maintenance.proximaManutencao && (
               <Button 
                 variant="destructive" 
                 size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={(event) => {
+                  event.stopPropagation();
                   if (onDateChange) {
-                    onDateChange(equipmentId, m.typeId, null);
+                    onDateChange(equipmentId, maintenance.typeId, null);
                   }
                   setSelectedDate(undefined);
                   setIsOpen(false);
