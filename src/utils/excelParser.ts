@@ -1,33 +1,6 @@
 import * as XLSX from 'xlsx';
 import { Equipment, MaintenanceStats, MaintenanceRecord, MAINTENANCE_TYPES, MaintenanceTypeId, ELEVATION_DATA } from '@/types/equipment';
-
-function calculateDaysRemaining(nextMaintenance: Date | null): number | null {
-  if (!nextMaintenance) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const next = new Date(nextMaintenance);
-  next.setHours(0, 0, 0, 0);
-  const diffTime = next.getTime() - today.getTime();
-  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-}
-
-function getStatus(daysRemaining: number | null): 'ok' | 'warning' | 'critical' | 'overdue' | 'pending' {
-  if (daysRemaining === null) return 'pending';
-  if (daysRemaining < 0) return 'overdue';
-  if (daysRemaining <= 7) return 'critical';
-  if (daysRemaining <= 30) return 'warning';
-  return 'ok';
-}
-
-function getOverallStatus(manutencoes: MaintenanceRecord[]): 'ok' | 'warning' | 'critical' | 'overdue' {
-  const hasOverdue = manutencoes.some(m => m.status === 'overdue');
-  if (hasOverdue) return 'overdue';
-  const hasCritical = manutencoes.some(m => m.status === 'critical');
-  if (hasCritical) return 'critical';
-  const hasWarning = manutencoes.some(m => m.status === 'warning');
-  if (hasWarning) return 'warning';
-  return 'ok';
-}
+import { calculateDaysRemaining, getStatus, getOverallStatus, getStatusLabel } from '@/utils/maintenanceUtils';
 
 function parseDateString(dateStr: string | null | undefined): Date | null {
   if (!dateStr || typeof dateStr !== 'string') return null;
@@ -416,9 +389,7 @@ export function exportToPowerBI(equipment: Equipment[]): void {
       Elevação: e.elevacao,
       'Altura (m)': e.altura,
       Tipo: e.tipo,
-      'Status Geral': e.statusGeral === 'ok' ? 'Em Dia' :
-                      e.statusGeral === 'warning' ? 'Atenção' :
-                      e.statusGeral === 'critical' ? 'Crítico' : 'Atrasado',
+      'Status Geral': getStatusLabel(e.statusGeral),
       'Próxima Manutenção': e.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
       'Dias Restantes': e.diasRestantesGeral ?? '',
     };
@@ -427,10 +398,7 @@ export function exportToPowerBI(equipment: Equipment[]): void {
     e.manutencoes.forEach(m => {
       row[m.label] = m.proximaManutencao?.toLocaleDateString('pt-BR') || '';
       row[`${m.label} - Dias`] = m.diasRestantes ?? '';
-      row[`${m.label} - Status`] = m.status === 'ok' ? 'Em Dia' :
-                                    m.status === 'warning' ? 'Atenção' :
-                                    m.status === 'critical' ? 'Crítico' :
-                                    m.status === 'overdue' ? 'Atrasado' : 'Pendente';
+      row[`${m.label} - Status`] = getStatusLabel(m.status);
     });
 
     row['Data Exportação'] = new Date().toISOString();
@@ -508,10 +476,7 @@ export function exportToPowerBI(equipment: Equipment[]): void {
           'Data Programada': m.proximaManutencao.toLocaleDateString('pt-BR'),
           'Data ISO': m.proximaManutencao.toISOString().split('T')[0],
           'Dias Restantes': m.diasRestantes,
-          Status: m.status === 'ok' ? 'Em Dia' :
-                  m.status === 'warning' ? 'Atenção' :
-                  m.status === 'critical' ? 'Crítico' :
-                  m.status === 'overdue' ? 'Atrasado' : 'Pendente',
+          Status: getStatusLabel(m.status),
           'Prioridade': m.status === 'overdue' ? 1 :
                         m.status === 'critical' ? 2 :
                         m.status === 'warning' ? 3 : 4,
@@ -582,10 +547,7 @@ export function exportHistoryCSV(equipment: Equipment[]): void {
 
   equipment.forEach(e => {
     e.manutencoes.forEach(m => {
-      const statusLabel = m.status === 'ok' ? 'Em Dia' :
-                          m.status === 'warning' ? 'Atenção' :
-                          m.status === 'critical' ? 'Crítico' :
-                          m.status === 'overdue' ? 'Atrasado' : 'Pendente';
+      const statusLabel = getStatusLabel(m.status);
 
       // "Data Conclusão" is the ultimaManutencao if available
       const dataConclusao = m.ultimaManutencao
@@ -635,18 +597,13 @@ export function exportToPowerBIData(equipment: Equipment[]): Uint8Array {
       Elevação: e.elevacao,
       'Altura (m)': e.altura,
       Tipo: e.tipo,
-      'Status Geral': e.statusGeral === 'ok' ? 'Em Dia' :
-                      e.statusGeral === 'warning' ? 'Atenção' :
-                      e.statusGeral === 'critical' ? 'Crítico' : 'Atrasado',
+      'Status Geral': getStatusLabel(e.statusGeral),
       'Próxima Manutenção': e.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
       'Dias Restantes': e.diasRestantesGeral ?? '',
     };
     e.manutencoes.forEach(m => {
       row[m.label] = m.proximaManutencao?.toLocaleDateString('pt-BR') || '';
-      row[`${m.label} - Status`] = m.status === 'ok' ? 'Em Dia' :
-                                    m.status === 'warning' ? 'Atenção' :
-                                    m.status === 'critical' ? 'Crítico' :
-                                    m.status === 'overdue' ? 'Atrasado' : 'Pendente';
+      row[`${m.label} - Status`] = getStatusLabel(m.status);
     });
     return row;
   });

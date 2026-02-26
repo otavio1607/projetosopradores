@@ -1,49 +1,23 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Equipment, MaintenanceStats, StatusFilter, MaintenanceTypeId, MAINTENANCE_TYPES } from '@/types/equipment';
 import { loadDefaultData, parseExcelFile, calculateStats, exportToPowerBI, exportToPowerBIData, exportHistoryCSV } from '@/utils/excelParser';
+import { calculateDaysRemaining, getStatus, getOverallStatus } from '@/utils/maintenanceUtils';
 import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { EquipmentTable } from '@/components/EquipmentTable';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { 
   Gauge, 
   CheckCircle2, 
   AlertTriangle, 
   AlertCircle, 
   XCircle,
-  Loader2,
   Download
 } from 'lucide-react';
 import { toast } from 'sonner';
-
-function calculateDaysRemaining(date: Date | null): number | null {
-  if (!date) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(date);
-  target.setHours(0, 0, 0, 0);
-  return Math.ceil((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-}
-
-function getStatus(daysRemaining: number | null): 'ok' | 'warning' | 'critical' | 'overdue' | 'pending' {
-  if (daysRemaining === null) return 'pending';
-  if (daysRemaining < 0) return 'overdue';
-  if (daysRemaining <= 7) return 'critical';
-  if (daysRemaining <= 30) return 'warning';
-  return 'ok';
-}
-
-function getOverallStatus(manutencoes: Equipment['manutencoes']): 'ok' | 'warning' | 'critical' | 'overdue' {
-  const hasOverdue = manutencoes.some(m => m.status === 'overdue');
-  if (hasOverdue) return 'overdue';
-  const hasCritical = manutencoes.some(m => m.status === 'critical');
-  if (hasCritical) return 'critical';
-  const hasWarning = manutencoes.some(m => m.status === 'warning');
-  if (hasWarning) return 'warning';
-  return 'ok';
-}
 
 export default function Index() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -196,14 +170,7 @@ export default function Index() {
   }, [handleMaintenanceDateChange]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-12 w-12 text-primary animate-spin" />
-          <p className="text-muted-foreground">Carregando dados...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Carregando dados..." />;
   }
 
   return (
