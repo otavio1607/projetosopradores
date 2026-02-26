@@ -46,6 +46,31 @@ export interface MaintenanceStats {
 
 export type StatusFilter = 'all' | 'ok' | 'warning' | 'critical' | 'overdue';
 
+export type PaymentStatus = 'pending' | 'completed' | 'failed';
+
+export type PaymentType = 'one_time' | 'subscription';
+
+export interface PaymentTransaction {
+  id: string;
+  equipmentId?: string;
+  serviceType: MaintenanceTypeId | string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  paymentType: PaymentType;
+  stripePaymentIntentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  description: string;
+}
+
+export interface ServicePricing {
+  serviceId: string;
+  label: string;
+  price: number;
+  currency: string;
+}
+
 // Mapeamento completo de elevações e alturas para cada soprador (fallback para dados de amostra)
 export const ELEVATION_DATA: Record<number, { elev: number; altura: number; area: string; tipo: string }> = {
   // Caldeira SPD 101-130
