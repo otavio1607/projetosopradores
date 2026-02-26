@@ -1,8 +1,7 @@
-import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User } from 'lucide-react';
+import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, Code2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
-import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
@@ -15,14 +14,8 @@ interface HeaderProps {
 }
 
 export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetExportData, lastUpdate }: HeaderProps) {
-  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
-    toast.success('Sessão encerrada');
-  };
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -142,20 +135,15 @@ export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetEx
               Download ZIP
             </Button>
 
-            <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <User className="h-3 w-3" />
-                {user?.email?.split('@')[0]}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleSignOut}
-                className="gap-1 text-muted-foreground hover:text-destructive"
-              >
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/codigo')}
+              className="gap-2"
+            >
+              <Code2 className="h-4 w-4" />
+              Código
+            </Button>
           </div>
         </div>
       </div>

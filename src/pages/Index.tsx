@@ -352,6 +352,17 @@ export default function Index() {
           <p className="mt-1">
             Compatível com Power BI • Exportação em formato XLSX
           </p>
+          <p className="mt-1">
+            MIT License · © {new Date().getFullYear()} otavio1607 ·{' '}
+            <a
+              href="https://github.com/otavio1607/projetosopradores"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-primary"
+            >
+              GitHub
+            </a>
+          </p>
         </div>
       </footer>
     </div>
