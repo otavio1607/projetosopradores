@@ -1,17 +1,29 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { UserRole, UserProfile } from '@/types/auth';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   loading: boolean;
+  role: UserRole;
+  isAdmin: boolean;
+  isSupervisor: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, displayName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+function getRoleFromMetadata(user: User | null): UserRole {
+  if (!user) return 'tecnico';
+  const role = user.user_metadata?.role as UserRole | undefined;
+  if (role === 'admin' || role === 'supervisor' || role === 'tecnico') return role;
+  return 'tecnico';
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -46,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email,
       password,
       options: {
-        data: { display_name: displayName },
+        data: { display_name: displayName, role: 'tecnico' },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -57,8 +69,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const role = getRoleFromMetadata(user);
+  const profile: UserProfile | null = user ? {
+    id: user.id,
+    email: user.email ?? '',
+    displayName: user.user_metadata?.display_name ?? user.email ?? '',
+    role,
+    createdAt: user.created_at,
+    lastLoginAt: user.last_sign_in_at,
+  } : null;
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      session,
+      profile,
+      loading,
+      role,
+      isAdmin: role === 'admin',
+      isSupervisor: role === 'supervisor' || role === 'admin',
+      signIn,
+      signUp,
+      signOut,
+    }}>
       {children}
     </AuthContext.Provider>
   );
