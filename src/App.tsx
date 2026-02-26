@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Codigo from "./pages/Codigo";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
                 <Index />
               </ProtectedRoute>
             } />
+            <Route path="/codigo" element={<Codigo />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
