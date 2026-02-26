@@ -7,6 +7,7 @@ import { EquipmentTable } from '@/components/EquipmentTable';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
+import { useMaintenanceSync } from '@/hooks/useMaintenanceSync';
 import { 
   Gauge, 
   CheckCircle2, 
@@ -45,6 +46,23 @@ function getOverallStatus(manutencoes: Equipment['manutencoes']): 'ok' | 'warnin
   return 'ok';
 }
 
+function deriveEquipmentTotals(manutencoes: Equipment['manutencoes']) {
+  const validManutencoes = manutencoes.filter(m => m.proximaManutencao !== null);
+  const proximaManutencaoGeral = validManutencoes.length > 0
+    ? validManutencoes.reduce((min, m) =>
+        !min || (m.proximaManutencao && m.proximaManutencao < min) ? m.proximaManutencao : min,
+        null as Date | null
+      )
+    : null;
+  const diasRestantesGeral = validManutencoes.length > 0
+    ? validManutencoes.reduce((min, m) =>
+        m.diasRestantes !== null && (min === null || m.diasRestantes < min) ? m.diasRestantes : min,
+        null as number | null
+      )
+    : null;
+  return { proximaManutencaoGeral, diasRestantesGeral };
+}
+
 export default function Index() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [stats, setStats] = useState<MaintenanceStats>({
@@ -57,13 +75,52 @@ export default function Index() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const { loadSavedRecords, saveRecord } = useMaintenanceSync();
+
+  const applySavedRecords = useCallback((
+    baseData: Equipment[],
+    saved: { equipment_tag: string; type_id: string; ultima_manutencao: string | null; proxima_manutencao: string | null }[]
+  ): Equipment[] => {
+    if (saved.length === 0) return baseData;
+    return baseData.map(equip => {
+      const updatedManutencoes = equip.manutencoes.map(m => {
+        const record = saved.find(
+          r => r.equipment_tag === equip.tag && r.type_id === m.typeId
+        );
+        if (!record) return m;
+        const proximaManutencao = record.proxima_manutencao
+          ? new Date(record.proxima_manutencao + 'T00:00:00')
+          : null;
+        const ultimaManutencao = record.ultima_manutencao
+          ? new Date(record.ultima_manutencao + 'T00:00:00')
+          : null;
+        const diasRestantes = calculateDaysRemaining(proximaManutencao);
+        return {
+          ...m,
+          proximaManutencao,
+          ultimaManutencao,
+          diasRestantes,
+          status: getStatus(diasRestantes),
+        };
+      });
+      const { proximaManutencaoGeral, diasRestantesGeral } = deriveEquipmentTotals(updatedManutencoes);
+      return {
+        ...equip,
+        manutencoes: updatedManutencoes,
+        statusGeral: getOverallStatus(updatedManutencoes),
+        proximaManutencaoGeral,
+        diasRestantesGeral,
+      };
+    });
+  }, []);
 
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const data = await loadDefaultData();
-      setEquipment(data);
-      setStats(calculateStats(data));
+      const [data, saved] = await Promise.all([loadDefaultData(), loadSavedRecords()]);
+      const merged = applySavedRecords(data, saved);
+      setEquipment(merged);
+      setStats(calculateStats(merged));
       setLastUpdate(new Date());
       toast.success('Dados carregados com sucesso!');
     } catch (error) {
@@ -81,11 +138,12 @@ export default function Index() {
   const handleImport = async (file: File) => {
     setIsLoading(true);
     try {
-      const data = await parseExcelFile(file);
-      setEquipment(data);
-      setStats(calculateStats(data));
+      const [data, saved] = await Promise.all([parseExcelFile(file), loadSavedRecords()]);
+      const merged = applySavedRecords(data, saved);
+      setEquipment(merged);
+      setStats(calculateStats(merged));
       setLastUpdate(new Date());
-      toast.success(`${data.length} equipamentos importados com sucesso!`);
+      toast.success(`${merged.length} equipamentos importados com sucesso!`);
     } catch (error) {
       console.error('Error importing file:', error);
       toast.error('Erro ao importar arquivo. Verifique o formato.');
@@ -123,14 +181,20 @@ export default function Index() {
     typeId: MaintenanceTypeId, 
     newDate: Date | null
   ) => {
+    let equipmentTag = '';
+    let ultimaManutencao: Date | null = null;
+
     setEquipment(prevEquipment => {
       const updatedEquipment = prevEquipment.map(equip => {
         if (equip.id !== equipmentId) return equip;
+
+        equipmentTag = equip.tag;
 
         // Update the specific maintenance record
         const updatedManutencoes = equip.manutencoes.map(m => {
           if (m.typeId !== typeId) return m;
           
+          ultimaManutencao = m.ultimaManutencao;
           const diasRestantes = calculateDaysRemaining(newDate);
           return {
             ...m,
@@ -141,19 +205,7 @@ export default function Index() {
         });
 
         // Recalculate overall status
-        const validManutencoes = updatedManutencoes.filter(m => m.proximaManutencao !== null);
-        const proximaManutencaoGeral = validManutencoes.length > 0
-          ? validManutencoes.reduce((min, m) => 
-              !min || (m.proximaManutencao && m.proximaManutencao < min) ? m.proximaManutencao : min, 
-              null as Date | null
-            )
-          : null;
-        const diasRestantesGeral = validManutencoes.length > 0
-          ? validManutencoes.reduce((min, m) => 
-              m.diasRestantes !== null && (min === null || m.diasRestantes < min) ? m.diasRestantes : min, 
-              null as number | null
-            )
-          : null;
+        const { proximaManutencaoGeral, diasRestantesGeral } = deriveEquipmentTotals(updatedManutencoes);
 
         return {
           ...equip,
@@ -171,11 +223,16 @@ export default function Index() {
       return updatedEquipment;
     });
 
+    // Persist to Supabase
+    if (equipmentTag) {
+      saveRecord(equipmentTag, typeId, newDate, ultimaManutencao);
+    }
+
     toast.success(newDate 
       ? `Data atualizada para ${newDate.toLocaleDateString('pt-BR')}` 
       : 'Data removida'
     );
-  }, []);
+  }, [saveRecord]);
 
   const handleMaintenanceComplete = useCallback((
     equipmentId: string,
@@ -189,11 +246,44 @@ export default function Index() {
     const nextDate = new Date(today);
     nextDate.setDate(today.getDate() + maintenanceType.interval);
 
-    // Use existing date change handler with the calculated next date
-    handleMaintenanceDateChange(equipmentId, typeId, nextDate);
-    
+    // Find the equipment tag for persistence
+    const equip = equipment.find(e => e.id === equipmentId);
+
+    setEquipment(prevEquipment => {
+      const updatedEquipment = prevEquipment.map(e => {
+        if (e.id !== equipmentId) return e;
+        const updatedManutencoes = e.manutencoes.map(m => {
+          if (m.typeId !== typeId) return m;
+          const diasRestantes = calculateDaysRemaining(nextDate);
+          return {
+            ...m,
+            ultimaManutencao: today,
+            proximaManutencao: nextDate,
+            diasRestantes,
+            status: getStatus(diasRestantes),
+          };
+        });
+        const { proximaManutencaoGeral, diasRestantesGeral } = deriveEquipmentTotals(updatedManutencoes);
+        return {
+          ...e,
+          manutencoes: updatedManutencoes,
+          statusGeral: getOverallStatus(updatedManutencoes),
+          proximaManutencaoGeral,
+          diasRestantesGeral,
+        };
+      });
+      setStats(calculateStats(updatedEquipment));
+      setLastUpdate(new Date());
+      return updatedEquipment;
+    });
+
+    // Persist to Supabase with updated ultimaManutencao
+    if (equip) {
+      saveRecord(equip.tag, typeId, nextDate, today);
+    }
+
     toast.success(`Manutenção "${maintenanceType.label}" concluída! Próxima em ${maintenanceType.periodicidade} (${nextDate.toLocaleDateString('pt-BR')})`);
-  }, [handleMaintenanceDateChange]);
+  }, [equipment, saveRecord]);
 
   if (isLoading) {
     return (
