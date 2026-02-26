@@ -1,9 +1,11 @@
-import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User } from 'lucide-react';
+import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { PaymentCard } from '@/components/PaymentCard';
 
 interface HeaderProps {
   onExport: () => void;
@@ -17,6 +19,7 @@ interface HeaderProps {
 export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetExportData, lastUpdate }: HeaderProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -142,6 +145,16 @@ export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetEx
               Download ZIP
             </Button>
 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPaymentOpen(true)}
+              className="gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Pagamentos
+            </Button>
+
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-border">
               <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <User className="h-3 w-3" />
@@ -159,6 +172,8 @@ export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetEx
           </div>
         </div>
       </div>
+
+      <PaymentCard open={paymentOpen} onOpenChange={setPaymentOpen} />
     </header>
   );
 }
