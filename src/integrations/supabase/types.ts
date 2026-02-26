@@ -14,7 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      maintenance_records: {
+        Row: {
+          id: string
+          user_id: string
+          equipment_tag: string
+          type_id: string
+          ultima_manutencao: string | null
+          proxima_manutencao: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          equipment_tag: string
+          type_id: string
+          ultima_manutencao?: string | null
+          proxima_manutencao?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          equipment_tag?: string
+          type_id?: string
+          ultima_manutencao?: string | null
+          proxima_manutencao?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_records_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
