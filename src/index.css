@@ -1,0 +1,188 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Industrial Maintenance Dashboard Design System */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+@layer base {
+  :root {
+    /* Industrial Dark Theme - SCADA inspired */
+    --background: 220 20% 10%;
+    --foreground: 210 20% 95%;
+
+    --card: 220 18% 13%;
+    --card-foreground: 210 20% 95%;
+
+    --popover: 220 18% 13%;
+    --popover-foreground: 210 20% 95%;
+
+    /* Industrial Blue */
+    --primary: 210 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Steel Gray */
+    --secondary: 215 20% 25%;
+    --secondary-foreground: 210 20% 90%;
+
+    --muted: 220 15% 18%;
+    --muted-foreground: 215 15% 55%;
+
+    /* Accent - Electric Blue Glow */
+    --accent: 200 100% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Alert Orange */
+    --destructive: 25 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Status Colors */
+    --status-ok: 145 70% 45%;
+    --status-warning: 45 100% 50%;
+    --status-critical: 0 85% 55%;
+    --status-overdue: 0 100% 40%;
+
+    --border: 220 15% 22%;
+    --input: 220 15% 20%;
+    --ring: 210 100% 50%;
+
+    --radius: 0.5rem;
+
+    /* Custom Gradients */
+    --gradient-industrial: linear-gradient(135deg, hsl(220 20% 10%) 0%, hsl(220 25% 15%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(220 18% 15%) 0%, hsl(220 18% 11%) 100%);
+    --gradient-glow: linear-gradient(180deg, hsl(210 100% 50% / 0.1) 0%, transparent 100%);
+    --gradient-status-ok: linear-gradient(135deg, hsl(145 70% 45%) 0%, hsl(145 70% 35%) 100%);
+    --gradient-status-warning: linear-gradient(135deg, hsl(45 100% 50%) 0%, hsl(35 100% 45%) 100%);
+    --gradient-status-critical: linear-gradient(135deg, hsl(0 85% 55%) 0%, hsl(0 85% 45%) 100%);
+
+    /* Shadows */
+    --shadow-glow: 0 0 20px hsl(210 100% 50% / 0.3);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.4);
+    --shadow-inset: inset 0 1px 0 hsl(0 0% 100% / 0.05);
+
+    --sidebar-background: 220 20% 8%;
+    --sidebar-foreground: 210 20% 95%;
+    --sidebar-primary: 210 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 18%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 220 15% 18%;
+    --sidebar-ring: 210 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--gradient-industrial);
+    min-height: 100vh;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  .industrial-card {
+    @apply rounded-lg border border-border p-6;
+    background: var(--gradient-card);
+    box-shadow: var(--shadow-card), var(--shadow-inset);
+  }
+
+  .status-badge {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold;
+  }
+
+  .status-ok {
+    @apply bg-[hsl(145_70%_45%/0.15)] text-[hsl(145_70%_50%)] border border-[hsl(145_70%_45%/0.3)];
+  }
+
+  .status-warning {
+    @apply bg-[hsl(45_100%_50%/0.15)] text-[hsl(45_100%_55%)] border border-[hsl(45_100%_50%/0.3)];
+  }
+
+  .status-critical {
+    @apply bg-[hsl(0_85%_55%/0.15)] text-[hsl(0_85%_60%)] border border-[hsl(0_85%_55%/0.3)];
+  }
+
+  .status-overdue {
+    @apply bg-[hsl(0_100%_40%/0.2)] text-[hsl(0_100%_60%)] border border-[hsl(0_100%_40%/0.4)];
+    animation: pulse-critical 2s ease-in-out infinite;
+  }
+
+  .glow-effect {
+    box-shadow: var(--shadow-glow);
+  }
+
+  .data-cell {
+    @apply font-mono text-sm tracking-wide;
+  }
+
+  .stat-value {
+    @apply text-4xl font-bold font-mono tracking-tight;
+    text-shadow: 0 0 30px currentColor;
+  }
+
+  .progress-bar {
+    @apply h-2 rounded-full overflow-hidden bg-muted;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+}
+
+@layer utilities {
+  @keyframes pulse-critical {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes count-up {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.4s ease-out forwards;
+  }
+
+  .animate-count-up {
+    animation: count-up 0.6s ease-out forwards;
+  }
+
+  .grid-pattern {
+    background-image: 
+      linear-gradient(hsl(220 15% 20% / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(220 15% 20% / 0.5) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+}

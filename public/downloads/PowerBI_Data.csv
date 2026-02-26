@@ -1,0 +1,178 @@
+TAG,Área,Elevação,Altura,Tipo,Status,Dias Restantes,Data Atualização
+SPD-101,Caldeira,16,1,Rotativo,Em Dia,59,2026-01-31
+SPD-102,Caldeira,16,1,Rotativo,Em Dia,78,2026-01-31
+SPD-103,Caldeira,16,1,Rotativo,Atrasado,-7,2026-01-31
+SPD-104,Caldeira,16,1,Rotativo,Em Dia,66,2026-01-31
+SPD-105,Caldeira,15,1.9,Rotativo,Pendente,,2026-01-31
+SPD-106,Caldeira,15,1.9,Rotativo,Em Dia,76,2026-01-31
+SPD-107,Caldeira,14,3.5,Rotativo,Em Dia,71,2026-01-31
+SPD-108,Caldeira,14,3.5,Rotativo,Em Dia,64,2026-01-31
+SPD-109,Caldeira,14,0.4,Rotativo,Próximo,5,2026-01-31
+SPD-110,Caldeira,14,0.4,Rotativo,Em Dia,53,2026-01-31
+SPD-111,Caldeira,13,1.1,Rotativo,Próximo,3,2026-01-31
+SPD-112,Caldeira,13,1.1,Rotativo,Em Dia,66,2026-01-31
+SPD-113,Caldeira,16,1.2,Rotativo,Próximo,5,2026-01-31
+SPD-114,Caldeira,16,1.2,Rotativo,Em Dia,61,2026-01-31
+SPD-115,Caldeira,15,2.1,Rotativo,Atrasado,-6,2026-01-31
+SPD-116,Caldeira,15,2.1,Rotativo,Atrasado,-3,2026-01-31
+SPD-117,Caldeira,14,3.7,Rotativo,Atrasado,-21,2026-01-31
+SPD-118,Caldeira,14,3.7,Rotativo,Próximo,4,2026-01-31
+SPD-119,Caldeira,14,0.7,Rotativo,Em Dia,44,2026-01-31
+SPD-120,Caldeira,14,0.7,Rotativo,Em Dia,48,2026-01-31
+SPD-121,Caldeira,13,1.3,Rotativo,Próximo,9,2026-01-31
+SPD-122,Caldeira,13,1.3,Rotativo,Em Dia,43,2026-01-31
+SPD-123,Caldeira,12,1.9,Rotativo,Próximo,9,2026-01-31
+SPD-124,Caldeira,12,1.9,Rotativo,Em Dia,62,2026-01-31
+SPD-125,Caldeira,16,1.9,Rotativo,Em Dia,64,2026-01-31
+SPD-126,Caldeira,16,1.9,Rotativo,Próximo,9,2026-01-31
+SPD-127,Caldeira,15,2.7,Rotativo,Pendente,,2026-01-31
+SPD-128,Caldeira,15,2.7,Rotativo,Pendente,,2026-01-31
+SPD-129,Caldeira,15,0.7,Rotativo,Em Dia,87,2026-01-31
+SPD-130,Caldeira,15,0.7,Rotativo,Em Dia,50,2026-01-31
+SPD-131,Superaquecedor,14,2.3,Retrátil,Em Dia,60,2026-01-31
+SPD-132,Superaquecedor,14,2.3,Retrátil,Próximo,2,2026-01-31
+SPD-133,Superaquecedor,14,0.5,Retrátil,Próximo,7,2026-01-31
+SPD-134,Superaquecedor,14,0.5,Retrátil,Próximo,4,2026-01-31
+SPD-135,Superaquecedor,13,1.1,Retrátil,Pendente,,2026-01-31
+SPD-136,Superaquecedor,13,1.1,Retrátil,Em Dia,36,2026-01-31
+SPD-137,Superaquecedor,12,1.7,Retrátil,Pendente,,2026-01-31
+SPD-138,Superaquecedor,12,1.7,Retrátil,Em Dia,86,2026-01-31
+SPD-139,Superaquecedor,16,1.9,Retrátil,Em Dia,80,2026-01-31
+SPD-140,Superaquecedor,16,1.9,Retrátil,Em Dia,56,2026-01-31
+SPD-141,Superaquecedor,15,2.7,Retrátil,Em Dia,51,2026-01-31
+SPD-142,Superaquecedor,15,2.7,Retrátil,Em Dia,32,2026-01-31
+SPD-143,Superaquecedor,15,0.7,Retrátil,Próximo,14,2026-01-31
+SPD-144,Superaquecedor,15,0.7,Retrátil,Em Dia,68,2026-01-31
+SPD-145,Superaquecedor,14,2.3,Retrátil,Em Dia,34,2026-01-31
+SPD-146,Superaquecedor,14,2.3,Retrátil,Atrasado,-5,2026-01-31
+SPD-147,Superaquecedor,14,0.5,Retrátil,Em Dia,32,2026-01-31
+SPD-148,Superaquecedor,14,0.5,Retrátil,Próximo,7,2026-01-31
+SPD-149,Superaquecedor,13,1.1,Retrátil,Pendente,,2026-01-31
+SPD-150,Superaquecedor,13,1.1,Retrátil,Em Dia,39,2026-01-31
+SPD-151,Superaquecedor,12,1.7,Retrátil,Pendente,,2026-01-31
+SPD-152,Superaquecedor,12,1.7,Retrátil,Pendente,,2026-01-31
+SPD-153,Superaquecedor,16,2.8,Retrátil,Pendente,,2026-01-31
+SPD-154,Superaquecedor,16,2.8,Retrátil,Em Dia,43,2026-01-31
+SPD-155,Superaquecedor,16,1,Retrátil,Atrasado,-24,2026-01-31
+SPD-156,Superaquecedor,16,1,Retrátil,Pendente,,2026-01-31
+SPD-157,Superaquecedor,15,1.9,Retrátil,Próximo,7,2026-01-31
+SPD-158,Superaquecedor,15,1.9,Retrátil,Em Dia,53,2026-01-31
+SPD-159,Superaquecedor,14,3.5,Retrátil,Em Dia,83,2026-01-31
+SPD-160,Superaquecedor,14,3.5,Retrátil,Pendente,,2026-01-31
+SPD-161,Economizador,14,0.5,Retrátil,Em Dia,83,2026-01-31
+SPD-162,Economizador,14,0.5,Retrátil,Em Dia,49,2026-01-31
+SPD-163,Economizador,13,1.1,Retrátil,Em Dia,60,2026-01-31
+SPD-164,Economizador,13,1.1,Retrátil,Em Dia,36,2026-01-31
+SPD-165,Economizador,16,3.2,Retrátil,Em Dia,44,2026-01-31
+SPD-166,Economizador,16,3.2,Retrátil,Atrasado,-28,2026-01-31
+SPD-167,Economizador,16,2,Retrátil,Em Dia,49,2026-01-31
+SPD-168,Economizador,16,2,Retrátil,Em Dia,86,2026-01-31
+SPD-169,Economizador,15,1.9,Retrátil,Em Dia,81,2026-01-31
+SPD-170,Economizador,15,1.9,Retrátil,Em Dia,61,2026-01-31
+SPD-171,Economizador,14,3.7,Retrátil,Próximo,15,2026-01-31
+SPD-172,Economizador,14,3.7,Retrátil,Atrasado,-2,2026-01-31
+SPD-173,Economizador,14,0.7,Retrátil,Pendente,,2026-01-31
+SPD-174,Economizador,14,0.7,Retrátil,Em Dia,57,2026-01-31
+SPD-175,Economizador,16,3.2,Retrátil,Atrasado,-26,2026-01-31
+SPD-176,Economizador,16,3.2,Retrátil,Em Dia,63,2026-01-31
+SPD-177,Economizador,16,1,Retrátil,Em Dia,40,2026-01-31
+SPD-178,Economizador,16,1,Retrátil,Próximo,4,2026-01-31
+SPD-179,Economizador,15,1.9,Retrátil,Atrasado,-16,2026-01-31
+SPD-180,Economizador,15,1.9,Retrátil,Em Dia,79,2026-01-31
+SPD-181,Economizador,14,3.7,Retrátil,Em Dia,56,2026-01-31
+SPD-182,Economizador,14,3.7,Retrátil,Pendente,,2026-01-31
+SPD-183,Economizador,14,1.6,Retrátil,Em Dia,41,2026-01-31
+SPD-184,Economizador,14,1.6,Retrátil,Atrasado,-10,2026-01-31
+SPD-185,Economizador,16,3.4,Retrátil,Em Dia,83,2026-01-31
+SPD-186,Economizador,16,3.4,Retrátil,Pendente,,2026-01-31
+SPD-187,Economizador,16,0.4,Retrátil,Próximo,7,2026-01-31
+SPD-188,Economizador,16,0.4,Retrátil,Próximo,13,2026-01-31
+SPD-189,Economizador,15,1.5,Retrátil,Atrasado,-3,2026-01-31
+SPD-190,Economizador,15,1.5,Retrátil,Atrasado,-12,2026-01-31
+SPD-191,Ar Pré-Aquecido,14,3.7,Rotativo,Próximo,3,2026-01-31
+SPD-192,Ar Pré-Aquecido,14,3.7,Rotativo,Em Dia,44,2026-01-31
+SPD-193,Ar Pré-Aquecido,14,2.4,Rotativo,Em Dia,41,2026-01-31
+SPD-194,Ar Pré-Aquecido,14,2.4,Rotativo,Atrasado,-26,2026-01-31
+SPD-195,Ar Pré-Aquecido,14,0.7,Rotativo,Pendente,,2026-01-31
+SPD-196,Ar Pré-Aquecido,14,0.7,Rotativo,Em Dia,51,2026-01-31
+SPD-197,Ar Pré-Aquecido,16,1.25,Rotativo,Atrasado,-5,2026-01-31
+SPD-198,Ar Pré-Aquecido,13,0.6,Rotativo,Próximo,4,2026-01-31
+SPD-199,Ar Pré-Aquecido,16,1.25,Rotativo,Pendente,,2026-01-31
+SPD-200,Ar Pré-Aquecido,16,1.25,Rotativo,Em Dia,61,2026-01-31
+SPD-201,Ar Pré-Aquecido,15,2.7,Rotativo,Atrasado,-29,2026-01-31
+SPD-202,Ar Pré-Aquecido,15,2.7,Rotativo,Em Dia,83,2026-01-31
+SPD-203,Ar Pré-Aquecido,14,3.7,Rotativo,Em Dia,61,2026-01-31
+SPD-204,Ar Pré-Aquecido,14,3.7,Rotativo,Em Dia,77,2026-01-31
+SPD-205,Ar Pré-Aquecido,14,0.7,Rotativo,Em Dia,57,2026-01-31
+SPD-206,Ar Pré-Aquecido,14,0.7,Rotativo,Em Dia,33,2026-01-31
+SPD-207,Ar Pré-Aquecido,13,1.4,Rotativo,Em Dia,49,2026-01-31
+SPD-208,Ar Pré-Aquecido,13,1.4,Rotativo,Próximo,4,2026-01-31
+SPD-209,Ar Pré-Aquecido,12,2.4,Rotativo,Em Dia,35,2026-01-31
+SPD-210,Ar Pré-Aquecido,12,2.4,Rotativo,Próximo,5,2026-01-31
+SPD-211,Ar Pré-Aquecido,12,0.5,Rotativo,Próximo,9,2026-01-31
+SPD-212,Ar Pré-Aquecido,12,0.5,Rotativo,Atrasado,-3,2026-01-31
+SPD-213,Ar Pré-Aquecido,11,0.7,Rotativo,Atrasado,-26,2026-01-31
+SPD-214,Ar Pré-Aquecido,11,0.7,Rotativo,Próximo,1,2026-01-31
+SPD-215,Ar Pré-Aquecido,10,0.7,Rotativo,Próximo,5,2026-01-31
+SPD-216,Ar Pré-Aquecido,10,0.7,Rotativo,Próximo,10,2026-01-31
+SPD-217,Ar Pré-Aquecido,9,0.82,Rotativo,Pendente,,2026-01-31
+SPD-218,Ar Pré-Aquecido,9,0.82,Rotativo,Atrasado,-21,2026-01-31
+SPD-219,Ar Pré-Aquecido,16,3.6,Rotativo,Em Dia,74,2026-01-31
+SPD-220,Ar Pré-Aquecido,16,3.6,Rotativo,Em Dia,34,2026-01-31
+SPD-221,Reaquecedor,16,1.25,Retrátil,Em Dia,70,2026-01-31
+SPD-222,Reaquecedor,16,1.25,Retrátil,Em Dia,78,2026-01-31
+SPD-223,Reaquecedor,15,2.7,Retrátil,Em Dia,49,2026-01-31
+SPD-224,Reaquecedor,15,2.7,Retrátil,Em Dia,64,2026-01-31
+SPD-225,Reaquecedor,16,0.6,Retrátil,Pendente,,2026-01-31
+SPD-226,Reaquecedor,16,0.6,Retrátil,Pendente,,2026-01-31
+SPD-227,Reaquecedor,14,2.2,Retrátil,Atrasado,-27,2026-01-31
+SPD-228,Reaquecedor,14,2.2,Retrátil,Atrasado,-20,2026-01-31
+SPD-229,Reaquecedor,13,2.6,Retrátil,Atrasado,-12,2026-01-31
+SPD-230,Reaquecedor,13,2.6,Retrátil,Em Dia,58,2026-01-31
+SPD-231,Reaquecedor,13,0.6,Retrátil,Próximo,10,2026-01-31
+SPD-232,Reaquecedor,13,0.6,Retrátil,Atrasado,-5,2026-01-31
+SPD-233,Reaquecedor,12,1.4,Retrátil,Em Dia,79,2026-01-31
+SPD-234,Reaquecedor,12,1.4,Retrátil,Em Dia,51,2026-01-31
+SPD-235,Reaquecedor,11,1.6,Retrátil,Próximo,11,2026-01-31
+SPD-236,Reaquecedor,11,1.6,Retrátil,Em Dia,81,2026-01-31
+SPD-237,Reaquecedor,10,1.5,Retrátil,Em Dia,59,2026-01-31
+SPD-238,Reaquecedor,10,1.5,Retrátil,Em Dia,48,2026-01-31
+SPD-239,Reaquecedor,10,0.1,Retrátil,Atrasado,-18,2026-01-31
+SPD-240,Reaquecedor,10,0.1,Retrátil,Em Dia,36,2026-01-31
+SPD-241,Reaquecedor,9,0.82,Retrátil,Próximo,14,2026-01-31
+SPD-242,Reaquecedor,9,0.82,Retrátil,Próximo,10,2026-01-31
+SPD-243,Reaquecedor,16,3.15,Retrátil,Em Dia,80,2026-01-31
+SPD-244,Reaquecedor,16,3.15,Retrátil,Pendente,,2026-01-31
+SPD-245,Reaquecedor,16,1,Retrátil,Em Dia,84,2026-01-31
+SPD-246,Reaquecedor,16,1,Retrátil,Próximo,9,2026-01-31
+SPD-247,Reaquecedor,15,2.7,Retrátil,Atrasado,-2,2026-01-31
+SPD-248,Reaquecedor,15,2.7,Retrátil,Em Dia,80,2026-01-31
+SPD-249,Reaquecedor,16,3.25,Retrátil,Em Dia,38,2026-01-31
+SPD-250,Reaquecedor,16,3.25,Retrátil,Próximo,5,2026-01-31
+SPD-251,Tubulão,15,1.5,Rotativo,Em Dia,35,2026-01-31
+SPD-252,Tubulão,15,1.5,Rotativo,Em Dia,56,2026-01-31
+SPD-253,Tubulão,14,1.4,Rotativo,Em Dia,62,2026-01-31
+SPD-254,Tubulão,14,1.4,Rotativo,Próximo,10,2026-01-31
+SPD-255,Tubulão,12,2.6,Rotativo,Em Dia,49,2026-01-31
+SPD-256,Tubulão,16,2.6,Rotativo,Pendente,,2026-01-31
+SPD-257,Tubulão,11,1.3,Rotativo,Pendente,,2026-01-31
+SPD-258,Tubulão,11,1.3,Rotativo,Pendente,,2026-01-31
+SPD-259,Tubulão,9,0.87,Rotativo,Em Dia,31,2026-01-31
+SPD-260,Tubulão,9,0.87,Rotativo,Próximo,8,2026-01-31
+SPD-261,Tubulão,16,3.4,Rotativo,Próximo,6,2026-01-31
+SPD-262,Tubulão,16,3.4,Rotativo,Próximo,5,2026-01-31
+SPD-263,Tubulão,16,3.25,Rotativo,Próximo,9,2026-01-31
+SPD-264,Tubulão,16,3.25,Rotativo,Pendente,,2026-01-31
+SPD-265,Tubulão,15,1.5,Rotativo,Em Dia,87,2026-01-31
+SPD-266,Tubulão,15,1.5,Rotativo,Em Dia,83,2026-01-31
+SPD-267,Tubulão,14,1.4,Rotativo,Em Dia,53,2026-01-31
+SPD-268,Tubulão,14,1.4,Rotativo,Em Dia,33,2026-01-31
+SPD-269,Tubulão,12,2.6,Rotativo,Pendente,,2026-01-31
+SPD-270,Tubulão,12,2.6,Rotativo,Em Dia,52,2026-01-31
+SPD-271,Tubulão,9,0.87,Rotativo,Atrasado,-3,2026-01-31
+SPD-272,Tubulão,9,0.87,Rotativo,Pendente,,2026-01-31
+SPD-273,Tubulão,14,2.4,Rotativo,Pendente,,2026-01-31
+SPD-274,Tubulão,14,2.4,Rotativo,Em Dia,60,2026-01-31
+SPD-313,Outros,10,0.1,Rotativo,Em Dia,44,2026-01-31
+SPD-314,Outros,10,0.1,Rotativo,Em Dia,35,2026-01-31
+SPD-315,Outros,9,0.82,Rotativo,Pendente,,2026-01-31
