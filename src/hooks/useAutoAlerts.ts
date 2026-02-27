@@ -139,6 +139,8 @@ export function useEmailAlerts() {
   const { data: unreadAlerts } = useUnreadAlerts();
 
   const sendEmailAlert = useCallback(async (alert: any) => {
+    // Skip if email service is not configured
+    if (!import.meta.env.VITE_EMAIL_SERVICE) return;
     try {
       await fetch('/api/send-alert-email', {
         method: 'POST',

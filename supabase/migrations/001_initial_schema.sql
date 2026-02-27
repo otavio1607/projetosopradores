@@ -4,6 +4,7 @@
  */
 
 -- Drop existing tables if they exist (for development)
+DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS alerts CASCADE;
 DROP TABLE IF EXISTS maintenance_history CASCADE;
 DROP TABLE IF EXISTS maintenance_records CASCADE;
@@ -78,6 +79,20 @@ CREATE TABLE IF NOT EXISTS alerts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Audit logs (track all user actions for compliance)
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_email TEXT,
+  action TEXT NOT NULL,
+  resource_type TEXT NOT NULL,
+  resource_id TEXT NOT NULL,
+  changes JSONB DEFAULT '{}',
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  ip_address TEXT,
+  user_agent TEXT
+);
+
 -- Indexes for performance
 CREATE INDEX idx_equipment_area ON equipment(area);
 CREATE INDEX idx_equipment_status ON equipment(status_geral);
@@ -87,6 +102,9 @@ CREATE INDEX idx_maintenance_history_equipment_id ON maintenance_history(equipme
 CREATE INDEX idx_maintenance_history_data ON maintenance_history(data_manutencao);
 CREATE INDEX idx_alerts_equipment_id ON alerts(equipment_id);
 CREATE INDEX idx_alerts_lido ON alerts(lido);
+CREATE INDEX idx_audit_logs_user_id ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_resource ON audit_logs(resource_type, resource_id);
+CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -94,12 +112,19 @@ ALTER TABLE equipment ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE maintenance_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE alerts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies - Users can see all equipment and related data
 CREATE POLICY "Users can view all equipment" ON equipment FOR SELECT USING (true);
 CREATE POLICY "Users can view maintenance records" ON maintenance_records FOR SELECT USING (true);
 CREATE POLICY "Users can view maintenance history" ON maintenance_history FOR SELECT USING (true);
 CREATE POLICY "Users can view alerts" ON alerts FOR SELECT USING (true);
+CREATE POLICY "Admins can view audit logs" ON audit_logs FOR SELECT USING (
+  auth.uid() IN (SELECT id FROM users WHERE role IN ('admin', 'supervisor'))
+);
+CREATE POLICY "Authenticated users can insert audit logs" ON audit_logs FOR INSERT WITH CHECK (
+  auth.uid() IS NOT NULL
+);
 
 -- Admins and supervisors can insert/update/delete
 CREATE POLICY "Admins can insert equipment" ON equipment FOR INSERT WITH CHECK (
