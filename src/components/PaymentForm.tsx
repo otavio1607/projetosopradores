@@ -9,7 +9,7 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@/components/ui/radio-group';
-import { PaymentService, formatCurrency } from '@/services/paymentService';
+import { PaymentService, formatCurrency, BankTransferDetails } from '@/services/paymentService';
 import { Plan, PaymentMethod, Payment } from '@/types/licensing';
 import { Copy, AlertCircle, CheckCircle } from 'lucide-react';
 
@@ -26,7 +26,7 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
     'idle'
   );
   const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string } | null>(null);
-  const [bankDetails, setBankDetails] = useState<any>(null);
+  const [bankDetails, setBankDetails] = useState<BankTransferDetails | null>(null);
 
   // Dados do formulário
   const [formData, setFormData] = useState({

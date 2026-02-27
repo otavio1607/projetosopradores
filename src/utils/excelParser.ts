@@ -93,8 +93,7 @@ function parseMaintenanceSheet(worksheet: XLSX.WorkSheet): MaintenanceRow[] {
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
   const rows: MaintenanceRow[] = [];
 
-  for (const row of jsonData as any[]) {
-    const tag = row['TAG Soprador'] || row['TAG'] || '';
+  for (const row of jsonData as Record<string, string>[]) {
     const tipoManutencao = row['Tipo Manutenção'] || row['Tipo Manutencao'] || '';
     const diasStr = row['Dias Restantes'];
     const diasRestantes = diasStr && diasStr !== 'N/A' ? parseInt(diasStr) : null;
@@ -144,7 +143,7 @@ function parseEquipmentSheet(worksheet: XLSX.WorkSheet): EquipmentBaseRow[] {
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
   const rows: EquipmentBaseRow[] = [];
 
-  for (const row of jsonData as any[]) {
+  for (const row of jsonData as Record<string, string>[]) {
     const tag = row['TAG'] || row['Tag'] || '';
     rows.push({
       tag,
@@ -276,7 +275,7 @@ function parseSingleSheetWorkbook(workbook: XLSX.WorkBook): Equipment[] {
   const worksheet = workbook.Sheets[sheetName];
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: false });
 
-  const equipment: Equipment[] = jsonData.map((row: any, index: number) => {
+  const equipment: Equipment[] = jsonData.map((row: Record<string, string>, index: number) => {
     const tag = row['TAG'] || row['Tag'] || row['tag'] || `SPD-${index + 101}`;
     const tagStr = typeof tag === 'number' ? `SPD-${tag}` : String(tag);
     const spdNumber = parseInt(tagStr.replace(/\D/g, '')) || (index + 101);
@@ -409,8 +408,8 @@ export function exportToPowerBI(equipment: Equipment[]): void {
   const workbook = XLSX.utils.book_new();
 
   // ========== ABA 1: DADOS PRINCIPAIS ==========
-  const mainData: any[] = equipment.map(e => {
-    const row: any = {
+  const mainData: Record<string, string | number>[] = equipment.map(e => {
+    const row: Record<string, string | number> = {
       TAG: e.tag,
       Área: e.area,
       Elevação: e.elevacao,
@@ -422,7 +421,6 @@ export function exportToPowerBI(equipment: Equipment[]): void {
       'Próxima Manutenção': e.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
       'Dias Restantes': e.diasRestantesGeral ?? '',
     };
-
     // Add each maintenance type as columns
     e.manutencoes.forEach(m => {
       row[m.label] = m.proximaManutencao?.toLocaleDateString('pt-BR') || '';
@@ -495,7 +493,7 @@ export function exportToPowerBI(equipment: Equipment[]): void {
   XLSX.utils.book_append_sheet(workbook, serviceSheet, 'Serviços por Tipo');
 
   // ========== ABA 4: TIMELINE (GANTT) ==========
-  const timelineData: any[] = [];
+  const timelineData: Record<string, string | number>[] = [];
   equipment.forEach(e => {
     e.manutencoes.forEach(m => {
       if (m.proximaManutencao) {
@@ -628,8 +626,8 @@ export function exportToPowerBIData(equipment: Equipment[]): Uint8Array {
   const workbook = XLSX.utils.book_new();
 
   // Reuse same structure as exportToPowerBI
-  const mainData: any[] = equipment.map(e => {
-    const row: any = {
+  const mainData: Record<string, string | number>[] = equipment.map(e => {
+    const row: Record<string, string | number> = {
       TAG: e.tag,
       Área: e.area,
       Elevação: e.elevacao,

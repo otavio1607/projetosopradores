@@ -83,7 +83,7 @@ function AuditLogCard({ log }: { log: AuditLog }) {
     }
   };
 
-  const getActionColor = (action: string) => {
+  const getActionColor = (action: string): 'default' | 'secondary' | 'destructive' | 'outline' => {
     switch (action) {
       case 'DELETE':
         return 'destructive';
@@ -119,7 +119,7 @@ function AuditLogCard({ log }: { log: AuditLog }) {
           <div className="text-blue-600 mt-1">{getActionIcon(log.action)}</div>
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <Badge variant={getActionColor(log.action) as any}>
+              <Badge variant={getActionColor(log.action)}>
                 {getActionLabel(log.action)}
               </Badge>
               <span className="text-sm font-medium text-gray-900">

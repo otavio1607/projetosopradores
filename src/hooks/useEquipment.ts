@@ -11,7 +11,7 @@ import { Equipment, MaintenanceHistory, Alert, MaintenanceStats } from '@/lib/va
 export const equipmentQueryKeys = {
   all: ['equipment'] as const,
   lists: () => [...equipmentQueryKeys.all, 'list'] as const,
-  list: (filters?: any) => [...equipmentQueryKeys.lists(), { filters }] as const,
+  list: (filters?: Record<string, unknown>) => [...equipmentQueryKeys.lists(), { filters }] as const,
   details: () => [...equipmentQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...equipmentQueryKeys.details(), id] as const,
   byArea: (area: string) => [...equipmentQueryKeys.all, 'area', area] as const,

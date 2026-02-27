@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
-import { Equipment } from '@/lib/validationSchemas';
+import { Equipment, Alert } from '@/lib/validationSchemas';
 import { useCreateAlert, useUnreadAlerts } from '@/hooks/useEquipment';
 import { getStatus } from '@/lib/maintenanceCalculations';
 
@@ -120,7 +120,7 @@ export function useAlertNotifications() {
 /**
  * Função auxiliar para mostrar notificações do navegador
  */
-function showNotifications(alerts: any[]) {
+function showNotifications(alerts: Alert[]) {
   alerts.slice(0, 3).forEach(alert => {
     new Notification('Sistema de Manutenção', {
       body: alert.mensagem,
@@ -138,7 +138,7 @@ function showNotifications(alerts: any[]) {
 export function useEmailAlerts() {
   const { data: unreadAlerts } = useUnreadAlerts();
 
-  const sendEmailAlert = useCallback(async (alert: any) => {
+  const sendEmailAlert = useCallback(async (alert: Alert) => {
     try {
       await fetch('/api/send-alert-email', {
         method: 'POST',
