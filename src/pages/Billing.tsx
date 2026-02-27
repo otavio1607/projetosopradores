@@ -5,6 +5,7 @@ import { PricingPlans } from '@/components/PricingPlans';
 import { LicenseManager } from '@/components/LicenseManager';
 import { SubscriptionPanel } from '@/components/SubscriptionPanel';
 import { PaymentForm } from '@/components/PaymentForm';
+import { ReconciliationPanel } from '@/components/ReconciliationPanel';
 import { Plan, License } from '@/types/licensing';
 
 interface BillingPageProps {
@@ -26,11 +27,12 @@ export function BillingPage({ userId, currentLicense }: BillingPageProps) {
       </div>
 
       <Tabs defaultValue="plans" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="plans">Planos</TabsTrigger>
           <TabsTrigger value="license">Licença</TabsTrigger>
           <TabsTrigger value="subscription">Assinatura</TabsTrigger>
           <TabsTrigger value="payment">Pagamento</TabsTrigger>
+          <TabsTrigger value="reconciliation">Conciliação</TabsTrigger>
         </TabsList>
 
         {/* Tab: Planos */}
@@ -151,6 +153,23 @@ export function BillingPage({ userId, currentLicense }: BillingPageProps) {
                 </CardContent>
               </Card>
             )}
+          </div>
+        </TabsContent>
+
+        {/* Tab: Conciliação Financeira */}
+        <TabsContent value="reconciliation">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Conciliação Financeira</CardTitle>
+                <CardDescription>
+                  Confira se os pagamentos recebidos coincidem com o repasse da operadora (menos taxas)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ReconciliationPanel userId={userId} />
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>

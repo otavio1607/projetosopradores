@@ -9,9 +9,9 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from '@/components/ui/radio-group';
-import { PaymentService, formatCurrency } from '@/services/paymentService';
+import { PaymentService, formatCurrency, isSandboxMode, SANDBOX_TEST_CARDS, BankTransferDetails } from '@/services/paymentService';
 import { Plan, PaymentMethod, Payment } from '@/types/licensing';
-import { Copy, AlertCircle, CheckCircle } from 'lucide-react';
+import { Copy, AlertCircle, CheckCircle, ShieldCheck } from 'lucide-react';
 
 interface PaymentFormProps {
   plan: Plan;
@@ -25,25 +25,28 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>(
     'idle'
   );
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const [pixData, setPixData] = useState<{ qrCode: string; copyPaste: string } | null>(null);
-  const [bankDetails, setBankDetails] = useState<any>(null);
+  const [bankDetails, setBankDetails] = useState<BankTransferDetails | null>(null);
 
-  // Dados do formulário
+  // Dados do formulário – o número completo do cartão NUNCA é enviado ao servidor.
+  // Apenas os últimos 4 dígitos são retidos para exibição após a tokenização.
   const [formData, setFormData] = useState({
     email: '',
     cardholderName: '',
-    cardNumber: '',
+    cardNumber: '',    // usado apenas para gerar o token no cliente
     cardExpiry: '',
-    cardCVC: '',
+    cardCVC: '',       // usado apenas para gerar o token no cliente
   });
 
   const handleProcessPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
     setPaymentStatus('processing');
+    setErrorMessage('');
 
     try {
-      let payment;
+      let payment: Payment | undefined;
 
       if (paymentMethod === 'pix') {
         const result = await PaymentService.processPixPayment(
@@ -57,8 +60,10 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
           copyPaste: result.pixCopyPaste,
         });
       } else if (paymentMethod === 'credit_card') {
+        // Tokenização no cliente: o número bruto nunca trafega até o servidor
+        const cardToken = PaymentService.tokenizeCard(formData.cardNumber);
         payment = await PaymentService.processCardPayment(
-          formData.cardNumber,
+          cardToken,
           plan.price,
           plan.id,
           formData.email
@@ -73,12 +78,33 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
         setBankDetails(result.bankDetails);
       }
 
+      // Registra tentativa bem-sucedida
+      await PaymentService.logPaymentAttempt({
+        paymentId: payment?.id,
+        method: paymentMethod,
+        amount: plan.price,
+        currency: 'BRL',
+        status: 'completed',
+        sandboxMode: isSandboxMode(),
+      });
+
       setPaymentStatus('success');
-      onSuccess?.(payment);
+      onSuccess?.(payment!);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao processar pagamento';
       setPaymentStatus('error');
+      setErrorMessage(message);
       onError?.(message);
+
+      // Registra tentativa com falha
+      await PaymentService.logPaymentAttempt({
+        method: paymentMethod,
+        amount: plan.price,
+        currency: 'BRL',
+        status: 'failed',
+        errorMessage: message,
+        sandboxMode: isSandboxMode(),
+      });
     } finally {
       setIsProcessing(false);
     }
@@ -110,6 +136,22 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
 
   return (
     <div className="space-y-6">
+      {/* Aviso de modo sandbox */}
+      {isSandboxMode() && (
+        <Alert className="border-yellow-300 bg-yellow-50">
+          <AlertCircle className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800">
+            <strong>Modo Sandbox (Homologação):</strong> Use os cartões de teste abaixo.
+            Nenhum pagamento real será processado.
+            <div className="mt-2 text-xs space-y-1 font-mono">
+              <p>✅ Aprovado: {SANDBOX_TEST_CARDS.approved}</p>
+              <p>❌ Recusado: {SANDBOX_TEST_CARDS.declined}</p>
+              <p>💸 Saldo insuficiente: {SANDBOX_TEST_CARDS.insufficient_funds}</p>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Resumo do Plano */}
       <Card className="bg-blue-50 border-blue-200">
         <CardContent className="pt-6">
@@ -184,6 +226,12 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Dados de Pagamento</CardTitle>
+          {paymentMethod === 'credit_card' && (
+            <CardDescription className="flex items-center gap-1 text-green-700">
+              <ShieldCheck className="w-4 h-4" />
+              Seus dados de cartão são tokenizados localmente e nunca enviados ao servidor (PCI-DSS)
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleProcessPayment} className="space-y-4">
@@ -227,6 +275,7 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
                     onChange={(e) =>
                       setFormData((prev) => ({ ...prev, cardNumber: e.target.value }))
                     }
+                    autoComplete="cc-number"
                     required
                   />
                 </div>
@@ -241,6 +290,7 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, cardExpiry: e.target.value }))
                       }
+                      autoComplete="cc-exp"
                       required
                     />
                   </div>
@@ -253,6 +303,7 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, cardCVC: e.target.value }))
                       }
+                      autoComplete="cc-csc"
                       required
                     />
                   </div>
@@ -264,7 +315,7 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
               <Alert className="border-red-200 bg-red-50">
                 <AlertCircle className="h-4 w-4 text-red-600" />
                 <AlertDescription className="text-red-800">
-                  Erro ao processar pagamento. Tente novamente.
+                  {errorMessage || 'Erro ao processar pagamento. Tente novamente.'}
                 </AlertDescription>
               </Alert>
             )}

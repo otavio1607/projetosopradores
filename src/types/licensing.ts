@@ -125,3 +125,64 @@ export interface BankAccount {
   agencyNumber: string;
   accountType: 'checking' | 'savings';
 }
+
+export type WebhookEventType =
+  | 'payment.completed'
+  | 'payment.failed'
+  | 'payment.refunded'
+  | 'payment.pending'
+  | 'subscription.created'
+  | 'subscription.canceled'
+  | 'subscription.renewed'
+  | 'pix.confirmed'
+  | 'boleto.paid';
+
+export interface WebhookEvent {
+  id: string;
+  type: WebhookEventType;
+  provider: 'mercadopago' | 'stripe' | 'pagarme' | 'manual';
+  payload: Record<string, unknown>;
+  receivedAt: Date;
+  processed: boolean;
+  processedAt?: Date;
+  signature?: string;
+}
+
+export interface PaymentLog {
+  id: string;
+  paymentId?: string;
+  userId?: string;
+  method: PaymentMethod;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+  errorCode?: string;
+  errorMessage?: string;
+  provider?: string;
+  sandboxMode: boolean;
+  createdAt: Date;
+}
+
+export interface ReconciliationEntry {
+  paymentId: string;
+  date: Date;
+  grossAmount: number;
+  feeAmount: number;
+  netAmount: number;
+  expectedNet: number;
+  discrepancy: number;
+  status: 'matched' | 'discrepancy' | 'missing';
+  provider: string;
+  paymentMethod: PaymentMethod;
+}
+
+export interface ReconciliationSummary {
+  period: { start: Date; end: Date };
+  totalGross: number;
+  totalFees: number;
+  totalNet: number;
+  totalExpected: number;
+  totalDiscrepancy: number;
+  entries: ReconciliationEntry[];
+  matchRate: number;
+}
