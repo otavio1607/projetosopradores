@@ -15,8 +15,7 @@ import {
   XCircle,
   Loader2,
   Download,
-  Bell,
-  Workflow
+  Bell
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -219,9 +218,6 @@ export default function Index() {
   const criticalMaintenances = equipment.flatMap(eq => 
     eq.manutencoes.filter(m => m.status === 'critical' || m.status === 'overdue')
   );
-  
-  // Contar lanças em monitoramento (equipamentos ativos)
-  const lancasMonitoradas = equipment.length;
 
   return (
     <div className="min-h-screen">
@@ -303,16 +299,7 @@ export default function Index() {
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          <StatCard
-            title="Lanças"
-            value={lancasMonitoradas}
-            icon={<Workflow className="h-5 w-5" />}
-            variant="primary"
-            subtitle="monitoradas"
-            onClick={() => handleFilterClick('all')}
-            isActive={statusFilter === 'all'}
-          />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <StatCard
             title="Total"
             value={stats.total}
