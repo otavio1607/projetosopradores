@@ -127,29 +127,29 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full">
+        <table className="w-full table-fixed">
           <thead>
-            <tr className="border-b border-border">
-              <th className="w-10 p-4"></th>
-              <th className="text-left p-4 font-semibold text-sm uppercase tracking-wider">
+            <tr className="border-b border-border bg-muted/30">
+              <th className="w-12 p-4"></th>
+              <th className="text-left p-4 font-semibold text-sm uppercase tracking-wider w-32">
                 <SortButton field="tag">TAG</SortButton>
               </th>
-              <th className="text-left p-4 font-semibold text-sm uppercase tracking-wider">
+              <th className="text-left p-4 font-semibold text-sm uppercase tracking-wider w-36">
                 <SortButton field="area">Área</SortButton>
               </th>
-              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider">
+              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider w-24">
                 <SortButton field="elevacao">Andar</SortButton>
               </th>
-              <th className="text-left p-4 font-semibold text-sm uppercase tracking-wider text-muted-foreground">
+              <th className="text-left p-4 font-semibold text-sm uppercase tracking-wider text-muted-foreground flex-1">
                 Próxima Manutenção
               </th>
-              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider">
+              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider w-24">
                 <SortButton field="diasRestantesGeral">Dias</SortButton>
               </th>
-              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider">
+              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider w-32">
                 <SortButton field="statusGeral">Status</SortButton>
               </th>
-              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider text-muted-foreground">
+              <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider text-muted-foreground w-28">
                 Serviços
               </th>
             </tr>

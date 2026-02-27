@@ -14,9 +14,14 @@ import {
   AlertCircle, 
   XCircle,
   Loader2,
-  Download
+  Download,
+  Bell,
+  Workflow
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 function calculateDaysRemaining(date: Date | null): number | null {
   if (!date) return null;
@@ -206,6 +211,18 @@ export default function Index() {
     );
   }
 
+  // Calcular alertas críticos
+  const criticalEquipment = equipment.filter(eq => 
+    eq.statusGeral === 'overdue' || eq.statusGeral === 'critical'
+  );
+  const overdueEquipment = equipment.filter(eq => eq.statusGeral === 'overdue');
+  const criticalMaintenances = equipment.flatMap(eq => 
+    eq.manutencoes.filter(m => m.status === 'critical' || m.status === 'overdue')
+  );
+  
+  // Contar lanças em monitoramento (equipamentos ativos)
+  const lancasMonitoradas = equipment.length;
+
   return (
     <div className="min-h-screen">
       <Header
@@ -218,8 +235,84 @@ export default function Index() {
       />
 
       <main className="container mx-auto px-4 py-8">
+        {/* Banner de Alertas Críticos */}
+        {criticalEquipment.length > 0 && (
+          <Alert variant="destructive" className="mb-6 border-2 border-red-500 bg-red-50">
+            <AlertCircle className="h-5 w-5" />
+            <AlertTitle className="font-bold text-lg flex items-center gap-2">
+              <Bell className="h-5 w-5 animate-pulse" />
+              Atenção! Manutenções Urgentes Detectadas
+            </AlertTitle>
+            <AlertDescription className="mt-2">
+              <div className="space-y-2">
+                <p className="font-semibold">
+                  {overdueEquipment.length > 0 && (
+                    <span className="text-red-800">
+                      {overdueEquipment.length} equipamento(s) com manutenção ATRASADA
+                    </span>
+                  )}
+                  {overdueEquipment.length > 0 && criticalEquipment.length - overdueEquipment.length > 0 && ' | '}
+                  {criticalEquipment.length - overdueEquipment.length > 0 && (
+                    <span className="text-orange-800">
+                      {criticalEquipment.length - overdueEquipment.length} equipamento(s) em estado CRÍTICO
+                    </span>
+                  )}
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {criticalEquipment.slice(0, 5).map(eq => (
+                    <Badge 
+                      key={eq.id} 
+                      variant={eq.statusGeral === 'overdue' ? 'destructive' : 'default'}
+                      className="text-xs"
+                    >
+                      {eq.tag} - {eq.diasRestantesGeral !== null && eq.diasRestantesGeral < 0 
+                        ? `${Math.abs(eq.diasRestantesGeral)} dias atrasado` 
+                        : `${eq.diasRestantesGeral} dias restantes`}
+                    </Badge>
+                  ))}
+                  {criticalEquipment.length > 5 && (
+                    <Badge variant="outline" className="text-xs">
+                      +{criticalEquipment.length - 5} mais
+                    </Badge>
+                  )}
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="destructive" 
+                  className="mt-3"
+                  onClick={() => setStatusFilter('overdue')}
+                >
+                  Ver Todos os Alertas
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Alertas Info quando tudo está ok */}
+        {criticalEquipment.length === 0 && equipment.length > 0 && (
+          <Alert className="mb-6 border-green-500 bg-green-50">
+            <CheckCircle2 className="h-5 w-5 text-green-600" />
+            <AlertTitle className="font-bold text-green-800">
+              Sistema Operando Normalmente
+            </AlertTitle>
+            <AlertDescription className="text-green-700">
+              Todos os equipamentos estão com manutenções em dia. Continue monitorando regularmente.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          <StatCard
+            title="Lanças"
+            value={lancasMonitoradas}
+            icon={<Workflow className="h-5 w-5" />}
+            variant="primary"
+            subtitle="monitoradas"
+            onClick={() => handleFilterClick('all')}
+            isActive={statusFilter === 'all'}
+          />
           <StatCard
             title="Total"
             value={stats.total}
@@ -278,19 +371,21 @@ export default function Index() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Table - 2 columns */}
-          <div className="lg:col-span-2">
-            <EquipmentTable 
-              equipment={equipment} 
-              statusFilter={statusFilter}
-              onMaintenanceDateChange={handleMaintenanceDateChange}
-              onMaintenanceComplete={handleMaintenanceComplete}
-            />
+        <div className="grid xl:grid-cols-4 gap-6">
+          {/* Table - 3 columns - Aumentado para melhor visualização */}
+          <div className="xl:col-span-3">
+            <div className="w-full">
+              <EquipmentTable 
+                equipment={equipment} 
+                statusFilter={statusFilter}
+                onMaintenanceDateChange={handleMaintenanceDateChange}
+                onMaintenanceComplete={handleMaintenanceComplete}
+              />
+            </div>
           </div>
 
           {/* Calendar - 1 column */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1">
             <MaintenanceCalendar equipment={equipment} />
           </div>
         </div>
