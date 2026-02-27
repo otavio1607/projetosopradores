@@ -1,16 +1,21 @@
 import { Equipment, StatusFilter, MaintenanceTypeId } from '@/types/equipment';
 import { cn } from '@/lib/utils';
-import { Calendar, Clock, Wrench, ArrowUpDown, ChevronDown, ChevronRight, Search, Filter } from 'lucide-react';
+import { Calendar, Clock, Wrench, ArrowUpDown, ChevronDown, ChevronRight, Search, Filter, Plus, Trash2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { MaintenanceCard } from './MaintenanceCard';
+import { AddEquipmentDialog } from './AddEquipmentDialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 interface EquipmentTableProps {
   equipment: Equipment[];
   statusFilter: StatusFilter;
   onMaintenanceDateChange?: (equipmentId: string, typeId: MaintenanceTypeId, newDate: Date | null) => void;
   onMaintenanceComplete?: (equipmentId: string, typeId: MaintenanceTypeId) => void;
+  onAddEquipment?: (equipment: Equipment) => void;
+  onDeleteEquipment?: (equipmentId: string) => void;
 }
 
 type SortField = 'tag' | 'area' | 'elevacao' | 'diasRestantesGeral' | 'statusGeral';
@@ -24,12 +29,14 @@ const statusLabels = {
   pending: 'Pendente',
 };
 
-export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChange, onMaintenanceComplete }: EquipmentTableProps) {
+export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChange, onMaintenanceComplete, onAddEquipment, onDeleteEquipment }: EquipmentTableProps) {
   const [sortField, setSortField] = useState<SortField>('diasRestantesGeral');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [searchTag, setSearchTag] = useState('');
   const [areaFilter, setAreaFilter] = useState<string>('all');
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const areas = useMemo(() => {
     const unique = [...new Set(equipment.map(e => e.area))].sort();
@@ -124,6 +131,16 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
             ))}
           </SelectContent>
         </Select>
+        {onAddEquipment && (
+          <Button
+            size="sm"
+            className="gap-2 whitespace-nowrap"
+            onClick={() => setAddDialogOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar Equipamento
+          </Button>
+        )}
       </div>
 
       <div className="overflow-x-auto">
@@ -152,6 +169,9 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
               <th className="text-center p-4 font-semibold text-sm uppercase tracking-wider text-muted-foreground w-28">
                 Serviços
               </th>
+              {onDeleteEquipment && (
+                <th className="w-12 p-4"></th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -223,12 +243,24 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                         </span>
                       </div>
                     </td>
+                    {onDeleteEquipment && (
+                      <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteConfirmId(equip.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </td>
+                    )}
                   </tr>
                   
                   {/* Expanded Row - Maintenance Details with Editing */}
                   {isExpanded && (
                     <tr key={`${equip.id}-expanded`} className="bg-muted/20">
-                      <td colSpan={8} className="p-0">
+                      <td colSpan={onDeleteEquipment ? 9 : 8} className="p-0">
                         <div className="p-4">
                           <p className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
                             <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -263,6 +295,40 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
           <p>Nenhum equipamento encontrado com o filtro selecionado.</p>
         </div>
       )}
+
+      {onAddEquipment && (
+        <AddEquipmentDialog
+          open={addDialogOpen}
+          onOpenChange={setAddDialogOpen}
+          existingAreas={areas}
+          onAdd={onAddEquipment}
+        />
+      )}
+
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={open => { if (!open) setDeleteConfirmId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover Equipamento</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este equipamento? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteConfirmId && onDeleteEquipment) {
+                  onDeleteEquipment(deleteConfirmId);
+                }
+                setDeleteConfirmId(null);
+              }}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
