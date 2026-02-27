@@ -1,3 +1,4 @@
+import React from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -16,7 +17,7 @@ export interface AuditLog {
   action: string;
   resourceType: string;
   resourceId: string;
-  changes: Record<string, any>;
+  changes: Record<string, unknown>;
   timestamp: Date;
   ipAddress?: string;
   userAgent?: string;
@@ -33,7 +34,7 @@ export const auditService = {
     action: string,
     resourceType: string,
     resourceId: string,
-    changes?: Record<string, any>,
+    changes?: Record<string, unknown>,
     user?: User
   ): Promise<void> {
     if (!user) {
@@ -214,7 +215,7 @@ export function requireRole(role: UserRole) {
   return function withRoleCheck<P extends object>(Component: React.ComponentType<P>) {
     return function ProtectedComponent(props: P) {
       // Implementation would check auth context
-      return <Component {...props} />;
+      return React.createElement(Component, props);
     };
   };
 }

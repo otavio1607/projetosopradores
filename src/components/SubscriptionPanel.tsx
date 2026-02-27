@@ -25,7 +25,7 @@ import {
 
 interface SubscriptionPanelProps {
   userId: string;
-  onSubscriptionChanged?: (subscription: Subscription) => void;
+  onSubscriptionChanged?: (subscription: Subscription | null) => void;
 }
 
 export function SubscriptionPanel({ userId, onSubscriptionChanged }: SubscriptionPanelProps) {
@@ -65,7 +65,7 @@ export function SubscriptionPanel({ userId, onSubscriptionChanged }: Subscriptio
     try {
       await PaymentService.cancelSubscription(subscription.id);
       setSubscription(null);
-      onSubscriptionChanged?.(null as any);
+      onSubscriptionChanged?.(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao cancelar');
     }

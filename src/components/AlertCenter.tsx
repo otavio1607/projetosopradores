@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { useState } from 'react';
+import { Alert } from '@/lib/validationSchemas';
 
 /**
  * Componente que mostra alertas não lidos em um painel
@@ -101,7 +102,7 @@ export function AlertCenter() {
 /**
  * Componente individual de alerta
  */
-function AlertItem({ alert, onDismiss }: { alert: any; onDismiss: () => void }) {
+function AlertItem({ alert, onDismiss }: { alert: Alert; onDismiss: () => void }) {
   const getIcon = (tipo: string) => {
     switch (tipo) {
       case 'critico':

@@ -236,14 +236,14 @@ export function findRecurrentIssues(
   maintenanceType: string;
   count: number;
 }> {
-  const issues: Record<string, { maintenanceType: string; count: number }> = {};
+  const issues: Record<string, { maintenanceType: string; count: number; equipmentTag: string }> = {};
 
   equipment.forEach(eq => {
     eq.manutencoes.forEach(m => {
       if (m.status === 'overdue') {
         const key = `${eq.id}-${m.typeId}`;
         if (!issues[key]) {
-          issues[key] = { maintenanceType: m.label, count: 0 };
+          issues[key] = { maintenanceType: m.label, count: 0, equipmentTag: eq.tag };
         }
         issues[key].count++;
       }
@@ -252,12 +252,9 @@ export function findRecurrentIssues(
 
   return Object.entries(issues)
     .filter(([_, data]) => data.count >= threshold)
-    .map(([key, data]) => {
-      const equipTag = equipment.find(eq => eq.id === key.split('-')[0])?.tag || 'Unknown';
-      return {
-        equipmentTag: equipTag,
-        maintenanceType: data.maintenanceType,
-        count: data.count,
-      };
-    });
+    .map(([_, data]) => ({
+      equipmentTag: data.equipmentTag,
+      maintenanceType: data.maintenanceType,
+      count: data.count,
+    }));
 }

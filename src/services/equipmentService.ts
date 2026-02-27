@@ -411,11 +411,40 @@ export const statsService = {
   },
 };
 
+interface MaintenanceRecordRow {
+  id: string;
+  type_id: string;
+  label: string;
+  periodicidade: string;
+  ultima_manutencao: string | null;
+  proxima_manutencao: string | null;
+  dias_restantes: number | null;
+  status: MaintenanceRecord['status'];
+  created_at: string;
+  updated_at: string;
+}
+
+interface EquipmentRow {
+  id: string;
+  tag: string;
+  elevacao: number;
+  altura: number;
+  descricao: string;
+  area: string;
+  tipo: string;
+  status_geral: Equipment['statusGeral'];
+  proxima_manutencao_geral: string | null;
+  dias_restantes_geral: number | null;
+  created_at: string;
+  updated_at: string;
+  maintenance_records?: MaintenanceRecordRow[];
+}
+
 /**
  * Função auxiliar para transformar dados do Supabase
  */
-function transformEquipmentRow(row: any): Equipment {
-  const manutencoes: MaintenanceRecord[] = (row.maintenance_records || []).map((m: any) => ({
+function transformEquipmentRow(row: EquipmentRow): Equipment {
+  const manutencoes: MaintenanceRecord[] = (row.maintenance_records || []).map((m: MaintenanceRecordRow) => ({
     id: m.id,
     typeId: m.type_id,
     label: m.label,

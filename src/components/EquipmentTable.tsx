@@ -73,15 +73,17 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
         case 'elevacao':
           comparison = a.elevacao - b.elevacao;
           break;
-        case 'diasRestantesGeral':
+        case 'diasRestantesGeral': {
           const aDays = a.diasRestantesGeral ?? 999;
           const bDays = b.diasRestantesGeral ?? 999;
           comparison = aDays - bDays;
           break;
-        case 'statusGeral':
+        }
+        case 'statusGeral': {
           const statusOrder = { overdue: 0, critical: 1, warning: 2, ok: 3 };
           comparison = statusOrder[a.statusGeral] - statusOrder[b.statusGeral];
           break;
+        }
       }
       return sortOrder === 'asc' ? comparison : -comparison;
     });

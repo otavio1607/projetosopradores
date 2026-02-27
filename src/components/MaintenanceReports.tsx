@@ -63,7 +63,7 @@ export function MaintenanceReports({ equipment }: ReportsProps) {
   }));
 
   // Days remaining distribution
-  const daysData: any[] = [];
+  const daysData: { days: string; count: number }[] = [];
   [-30, -20, -10, 0, 10, 20, 30, 60, 90].forEach(day => {
     const count = equipment.filter(e => {
       if (e.diasRestantesGeral === null) return false;
