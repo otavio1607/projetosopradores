@@ -2,6 +2,8 @@
 
 Sistema web para controle de manutenção preventiva de **177 sopradores de fuligem**, com exportação para Power BI, histórico CSV e download consolidado em ZIP.
 
+🌐 **GitHub Pages:** [https://otavio1607.github.io/projetosopradores/](https://otavio1607.github.io/projetosopradores/)
+
 ---
 
 ## 🚀 Como Rodar no VS Code
