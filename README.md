@@ -6,6 +6,14 @@ Sistema web para controle de manutenção preventiva de **177 sopradores de fuli
 
 ## 🚀 Como Rodar no VS Code
 
+## 🌐 GitHub Pages
+
+Deploy automático habilitado via workflow em `.github/workflows/deploy-pages.yml`.
+
+- URL esperada: `https://otavio1607.github.io/projetosopradores/`
+- Após push na branch `main`, o deploy roda automaticamente.
+- No GitHub: **Settings → Pages → Source: GitHub Actions**.
+
 ### Pré-requisitos
 
 - **Node.js** v18+ → [download](https://nodejs.org/)
