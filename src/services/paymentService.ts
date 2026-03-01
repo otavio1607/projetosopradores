@@ -9,17 +9,80 @@ import {
   Invoice,
   PlanType,
   BillingCycle,
+  PaymentLog,
+  ReconciliationSummary,
 } from '@/types/licensing';
 import { getNextBillingDate } from '@/lib/paymentPlans';
+
+/**
+ * Cartões de teste para modo sandbox (Mercado Pago / Stripe)
+ * Nunca usar em produção.
+ */
+export const SANDBOX_TEST_CARDS = {
+  approved: '4509 9535 6623 3704',
+  declined: '4000 0000 0000 0002',
+  insufficient_funds: '4000 0000 0000 9995',
+  processing_error: '4000 0000 0000 0119',
+  expired_card: '4000 0000 0000 0069',
+  incorrect_cvc: '4000 0000 0000 0127',
+} as const;
+
+/**
+ * Mapeamento de códigos de erro para mensagens em português
+ */
+const PAYMENT_ERROR_MESSAGES: Record<string, string> = {
+  card_declined: 'Cartão recusado. Verifique os dados ou tente outro cartão.',
+  insufficient_funds: 'Saldo insuficiente. Verifique o limite disponível no seu cartão.',
+  invalid_card: 'Dados do cartão inválidos. Confira o número, validade e CVV.',
+  expired_card: 'Cartão expirado. Por favor, utilize um cartão com validade vigente.',
+  incorrect_cvc: 'CVV incorreto. Verifique o código de segurança no verso do cartão.',
+  processing_error: 'Erro ao processar o pagamento. Tente novamente em instantes.',
+  do_not_honor: 'Transação não autorizada pelo banco emissor. Entre em contato com seu banco.',
+  fraudulent: 'Transação bloqueada por suspeita de fraude. Entre em contato com seu banco.',
+  network_error: 'Falha de comunicação com a operadora. Tente novamente.',
+  pix_expired: 'Código Pix expirado. Gere um novo código para prosseguir.',
+  boleto_expired: 'Boleto vencido. Gere um novo boleto para prosseguir.',
+  subscription_canceled: 'Assinatura cancelada. Renove para continuar utilizando.',
+  unknown: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
+};
+
+/**
+ * Converte código de erro da API em mensagem amigável ao usuário
+ */
+export function parsePaymentError(errorCodeOrMessage: string): string {
+  const key = errorCodeOrMessage.toLowerCase().replace(/[\s-]/g, '_');
+  return PAYMENT_ERROR_MESSAGES[key] ?? PAYMENT_ERROR_MESSAGES['unknown'];
+}
+
+/**
+ * Indica se o sistema está em modo sandbox (homologação)
+ */
+export function isSandboxMode(): boolean {
+  return import.meta.env.VITE_PAYMENT_SANDBOX === 'true' || import.meta.env.DEV;
+}
 
 export class PaymentService {
   private static readonly API_BASE = '/api/v1/payments';
 
   /**
-   * Processa pagamento via cartão de crédito
+   * Tokeniza dados do cartão no lado do cliente antes de enviar ao servidor.
+   * Em produção, usar Stripe.js ou SDK do Mercado Pago para gerar o token.
+   * Nunca enviar dados brutos do cartão ao servidor (PCI-DSS).
+   */
+  static tokenizeCard(cardNumber: string): string {
+    // Produção: substituir por Stripe.js `stripe.createToken()` ou
+    // MP SDK `mp.createCardToken()`. Aqui retornamos apenas os últimos 4 dígitos
+    // como placeholder, garantindo que o número completo nunca trafegue.
+    const digits = cardNumber.replace(/\D/g, '');
+    return `tok_${digits.slice(-4)}_${Date.now()}`;
+  }
+
+  /**
+   * Processa pagamento via cartão de crédito.
+   * Recebe token (não dados brutos do cartão) – conformidade PCI-DSS.
    */
   static async processCardPayment(
-    token: string,
+    cardToken: string,
     amount: number,
     planType: PlanType,
     email: string
@@ -28,17 +91,19 @@ export class PaymentService {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        token,
+        cardToken,
         amount,
         planType,
         email,
+        sandbox: isSandboxMode(),
         timestamp: new Date().toISOString(),
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Falha ao processar pagamento');
+      const userMessage = parsePaymentError(error.code ?? error.message ?? 'unknown');
+      throw new Error(userMessage);
     }
 
     return response.json();
@@ -59,13 +124,15 @@ export class PaymentService {
         amount,
         planType,
         email,
+        sandbox: isSandboxMode(),
         timestamp: new Date().toISOString(),
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Falha ao gerar Pix');
+      const userMessage = parsePaymentError(error.code ?? error.message ?? 'unknown');
+      throw new Error(userMessage);
     }
 
     return response.json();
@@ -86,13 +153,15 @@ export class PaymentService {
         amount,
         planType,
         email,
+        sandbox: isSandboxMode(),
         timestamp: new Date().toISOString(),
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Falha ao gerar dados bancários');
+      const userMessage = parsePaymentError(error.code ?? error.message ?? 'unknown');
+      throw new Error(userMessage);
     }
 
     return response.json();
@@ -241,7 +310,7 @@ export class PaymentService {
   }
 
   /**
-   * Webhook para confirmar pagamento (chamado pelo backend)
+   * Webhook para confirmar pagamento (chamado pelo backend após verificação de assinatura)
    */
   static async confirmPayment(paymentId: string): Promise<void> {
     const response = await fetch(`${this.API_BASE}/${paymentId}/confirm`, {
@@ -251,6 +320,45 @@ export class PaymentService {
     if (!response.ok) {
       throw new Error('Falha ao confirmar pagamento');
     }
+  }
+
+  /**
+   * Registra tentativa de pagamento nos logs (auditoria)
+   */
+  static async logPaymentAttempt(log: Omit<PaymentLog, 'id' | 'createdAt'>): Promise<void> {
+    try {
+      await fetch(`${this.API_BASE}/logs`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...log, createdAt: new Date().toISOString() }),
+      });
+    } catch {
+      // Logging failures must not interrupt the payment flow
+      console.warn('[PaymentService] Falha ao registrar log de pagamento');
+    }
+  }
+
+  /**
+   * Obtém dados de conciliação financeira para o período informado
+   */
+  static async getReconciliationData(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<ReconciliationSummary> {
+    const params = new URLSearchParams({
+      userId,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    });
+
+    const response = await fetch(`${this.API_BASE}/reconciliation?${params}`);
+
+    if (!response.ok) {
+      throw new Error('Falha ao obter dados de conciliação');
+    }
+
+    return response.json();
   }
 }
 
@@ -283,3 +391,4 @@ export function formatCurrency(value: number, currency: string = 'BRL'): string 
 export function calculateProcessingFee(amount: number, feePercentage: number): number {
   return Math.round(amount * feePercentage * 100) / 100;
 }
+
