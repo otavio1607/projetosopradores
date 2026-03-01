@@ -7,6 +7,7 @@ import { EquipmentTable } from '@/components/EquipmentTable';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
+import { LancasCard } from '@/components/LancasCard';
 import { 
   Gauge, 
   CheckCircle2, 
@@ -356,6 +357,9 @@ export default function Index() {
         <div className="mb-6">
           <MaintenanceTimeline equipment={equipment} />
         </div>
+
+        {/* Lances Monitoring Card */}
+        <LancasCard />
 
         {/* Main Content Grid */}
         <div className="grid xl:grid-cols-4 gap-6">
