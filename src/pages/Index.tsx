@@ -482,7 +482,7 @@ export default function Index() {
                 XLS
               </div>
               <div>
-                <div className="text-sm font-medium">Planilha Excel</div>
+                <div className="text-sm font-medium">Arquivo principal</div>
                 <div className="text-xs text-muted-foreground">Dados completos</div>
               </div>
             </a>
@@ -495,7 +495,7 @@ export default function Index() {
                 CSV
               </div>
               <div>
-                <div className="text-sm font-medium">Power BI</div>
+                <div className="text-sm font-medium">Dados CSV</div>
                 <div className="text-xs text-muted-foreground">Formato CSV</div>
               </div>
             </a>
@@ -508,7 +508,7 @@ export default function Index() {
                 MD
               </div>
               <div>
-                <div className="text-sm font-medium">VS Code</div>
+                <div className="text-sm font-medium">Guia do sistema</div>
                 <div className="text-xs text-muted-foreground">README + instruções</div>
               </div>
             </a>
@@ -520,9 +520,7 @@ export default function Index() {
       <footer className="border-t border-border mt-12 py-6">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>Sistema de Gestão de Manutenção de Sopradores de Fuligem</p>
-          <p className="mt-1">
-            Compatível com Power BI • Exportação em formato XLSX
-          </p>
+          <p className="mt-1">Relatórios e exportações disponíveis no painel</p>
         </div>
       </footer>
     </div>
