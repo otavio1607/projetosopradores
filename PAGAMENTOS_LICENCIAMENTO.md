@@ -15,7 +15,7 @@ Seu sistema agora possui um **sistema completo de pagamentos e licenciamento** p
 
 ## 🎯 Planos Disponíveis
 
-### 1️⃣ **Gratuito** (R$ 0/mês)
+### 1️⃣ **Plano Inicial** (R$ 80/mês)
 ```
 ✓ Dashboard básico
 ✓ Até 10 equipamentos  
@@ -28,7 +28,7 @@ Seu sistema agora possui um **sistema completo de pagamentos e licenciamento** p
 ✗ Prioridade de suporte
 ```
 
-### 2️⃣ **Profissional** (R$ 99/mês)
+### 2️⃣ **Plano Profissional** (R$ 150/mês)
 ```
 ✓ Tudo do plano Gratuito
 ✓ Até 100 equipamentos
@@ -44,17 +44,17 @@ Seu sistema agora possui um **sistema completo de pagamentos e licenciamento** p
 ✗ SSO/OAuth
 ```
 
-### 3️⃣ **Profissional Anual** (R$ 950/ano = -20%)
+### 3️⃣ **Profissional Anual** (R$ 1.440/ano = -20%)
 ```
 ✓ Tudo do Profissional mensal
 ✓ Desconto de 20%
 ✓ Faturamento anual
 ```
 
-### 4️⃣ **Corporativo** (R$ 399/mês)
+### 4️⃣ **Plano Avançado** (R$ 200/mês)
 ```
 ✓ Tudo do Profissional
-✓ Ilimitado de equipamentos
+✓ 101 a 400 equipamentos
 ✓ Ilimitado de usuários
 ✓ API REST completa
 ✓ Webhooks customizados
@@ -64,7 +64,7 @@ Seu sistema agora possui um **sistema completo de pagamentos e licenciamento** p
 ✓ White-label disponível
 ```
 
-### 5️⃣ **Corporativo Anual** (R$ 3.580/ano = -25%)
+### 5️⃣ **Corporativo Anual** (R$ 1.920/ano = -20%)
 ```
 ✓ Tudo do Corporativo mensal
 ✓ Desconto de 25%
@@ -80,6 +80,7 @@ Seu sistema agora possui um **sistema completo de pagamentos e licenciamento** p
 - ✅ Instantâneo
 - ✅ Disponível 24/7
 - ✅ QR Code + Copia e Cola
+- ✅ Chave Pix fixa: **14997525748**
 - Integração: **Mercado Pago** ou **Stripe**
 
 ### 💳 **Cartão de Crédito**

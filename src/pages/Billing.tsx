@@ -6,6 +6,7 @@ import { LicenseManager } from '@/components/LicenseManager';
 import { SubscriptionPanel } from '@/components/SubscriptionPanel';
 import { PaymentForm } from '@/components/PaymentForm';
 import { Plan, License } from '@/types/licensing';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface BillingPageProps {
   userId: string;
@@ -156,4 +157,14 @@ export function BillingPage({ userId, currentLicense }: BillingPageProps) {
       </Tabs>
     </div>
   );
+}
+
+export default function Billing() {
+  const { user } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
+  return <BillingPage userId={user.id} />;
 }

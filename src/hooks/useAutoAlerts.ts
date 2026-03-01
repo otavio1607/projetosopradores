@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { Equipment } from '@/lib/validationSchemas';
 import { useCreateAlert, useUnreadAlerts } from '@/hooks/useEquipment';
@@ -12,8 +12,9 @@ export function useAutoAlerts(equipment: Equipment[] | undefined) {
   const { data: unreadAlerts } = useUnreadAlerts();
 
   // Track alerts that have already been created
-  const existingAlertKeys = new Set(
-    (unreadAlerts || []).map(a => `${a.equipmentId}-${a.maintenanceTypeId}`)
+  const existingAlertKeys = useMemo(
+    () => new Set((unreadAlerts || []).map(a => `${a.equipmentId}-${a.maintenanceTypeId}`)),
+    [unreadAlerts]
   );
 
   const generateAlerts = useCallback(() => {

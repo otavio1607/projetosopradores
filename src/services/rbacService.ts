@@ -211,10 +211,10 @@ function getClientIp(): string | undefined {
  * Componente wrapper para proteger routes por role
  */
 export function requireRole(role: UserRole) {
-  return function withRoleCheck<P extends object>(Component: React.ComponentType<P>) {
+  return function withRoleCheck<P extends object>(Component: (props: P) => unknown) {
     return function ProtectedComponent(props: P) {
       // Implementation would check auth context
-      return <Component {...props} />;
+      return Component(props);
     };
   };
 }

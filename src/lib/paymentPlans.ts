@@ -7,9 +7,9 @@ import { Plan } from '@/types/licensing';
 export const plans: Plan[] = [
   {
     id: 'free',
-    name: 'Gratuito',
-    description: 'Perfeito para testar a plataforma',
-    price: 0,
+    name: 'Plano Inicial',
+    description: 'Ideal para operação enxuta',
+    price: 80,
     billingCycle: 'monthly',
     maxEquipment: 10,
     maxUsers: 1,
@@ -35,9 +35,9 @@ export const plans: Plan[] = [
 
   {
     id: 'pro',
-    name: 'Profissional',
-    description: 'Para pequenas e médias empresas',
-    price: 99,
+    name: 'Plano Profissional',
+    description: 'Para operações com até 100 equipamentos',
+    price: 150,
     billingCycle: 'monthly',
     maxEquipment: 100,
     maxUsers: 5,
@@ -69,7 +69,7 @@ export const plans: Plan[] = [
     id: 'annual-pro',
     name: 'Profissional Anual',
     description: 'Aproveite 20% de desconto',
-    price: 950, // 12 meses com 20% off
+    price: 1440, // 12 meses com 20% off sobre R$150
     billingCycle: 'annual',
     maxEquipment: 100,
     maxUsers: 5,
@@ -88,11 +88,11 @@ export const plans: Plan[] = [
 
   {
     id: 'enterprise',
-    name: 'Corporativo',
-    description: 'Para grandes empresas com demandas específicas',
-    price: 399,
+    name: 'Plano Avançado',
+    description: 'Para operações entre 101 e 400 equipamentos',
+    price: 200,
     billingCycle: 'monthly',
-    maxEquipment: 999,
+    maxEquipment: 400,
     maxUsers: 99,
     maxStorage: 50000, // 50 GB
     support: '24/7',
@@ -102,7 +102,7 @@ export const plans: Plan[] = [
     apiAccess: true,
     features: [
       { name: 'Tudo do plano Profissional', included: true },
-      { name: 'Ilimitado de equipamentos', included: true },
+      { name: 'Até 400 equipamentos', included: true },
       { name: 'Ilimitado de usuários', included: true },
       { name: 'API REST completa', included: true },
       { name: 'Webhooks customizados', included: true },
@@ -121,10 +121,10 @@ export const plans: Plan[] = [
   {
     id: 'annual-enterprise',
     name: 'Corporativo Anual',
-    description: 'Aproveite 25% de desconto',
-    price: 3580, // 12 meses com 25% off
+    description: 'Aproveite 20% de desconto',
+    price: 1920, // 12 meses com 20% off sobre R$200
     billingCycle: 'annual',
-    maxEquipment: 999,
+    maxEquipment: 400,
     maxUsers: 99,
     maxStorage: 50000,
     support: '24/7',
@@ -157,7 +157,7 @@ export const paymentMethods = [
     id: 'pix',
     name: 'Pix',
     icon: '📱',
-    description: 'Transferência instantânea 24/7',
+    description: 'Transferência instantânea 24/7 • Chave: 14997525748',
     countries: ['BR'],
     processing_fee: 0,
   },

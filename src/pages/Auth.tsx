@@ -4,10 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Flame, LogIn, UserPlus, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Flame, LogIn, UserPlus, Loader2, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Auth() {
+  const pixKey = '14997525748';
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -53,7 +56,7 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md space-y-6">
         <div className="industrial-card">
           {/* Header */}
           <div className="flex items-center gap-3 mb-8">
@@ -146,6 +149,46 @@ export default function Auth() {
             </Button>
           </form>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Mensalidade do Sistema</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center justify-between rounded border p-2">
+                <span>Até 10 equipamentos</span>
+                <Badge>R$ 80/mês</Badge>
+              </div>
+              <div className="flex items-center justify-between rounded border p-2">
+                <span>Até 100 equipamentos</span>
+                <Badge>R$ 150/mês</Badge>
+              </div>
+              <div className="flex items-center justify-between rounded border p-2">
+                <span>101 a 400 equipamentos</span>
+                <Badge>R$ 200/mês</Badge>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Pagamento via Pix</p>
+              <div className="flex items-center gap-2">
+                <Input readOnly value={pixKey} className="font-mono" />
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(pixKey);
+                    toast.success('Chave Pix copiada!');
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

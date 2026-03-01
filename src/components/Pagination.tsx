@@ -136,7 +136,7 @@ export function Paginated({
               variant="outline"
               onClick={handleNext}
               disabled={pageInfo.currentPage === pageInfo.totalPages}
-              className=\"flex items-center gap-1"
+              className="flex items-center gap-1"
             >
               Próxima
               <ChevronRight size={16} />

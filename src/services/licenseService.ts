@@ -12,7 +12,7 @@ import {
 } from '@/types/licensing';
 
 // Planos disponíveis
-import { plans } from './paymentPlans';
+import { plans } from '@/lib/paymentPlans';
 
 export class LicenseService {
   private static readonly LICENSE_STORAGE_KEY = 'app_license';

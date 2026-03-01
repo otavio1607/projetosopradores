@@ -4,6 +4,7 @@ import { loadDefaultData, parseExcelFile, calculateStats, exportToPowerBI, expor
 import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { EquipmentTable } from '@/components/EquipmentTable';
+import { EquipmentManagerCard } from '@/components/EquipmentManagerCard';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
@@ -21,6 +22,7 @@ import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { LicenseService } from '@/services/licenseService';
 
 function calculateDaysRemaining(date: Date | null): number | null {
   if (!date) return null;
@@ -50,6 +52,7 @@ function getOverallStatus(manutencoes: Equipment['manutencoes']): 'ok' | 'warnin
 }
 
 export default function Index() {
+  const [dataSourcePath, setDataSourcePath] = useState('/downloads/Sopradores_Manutencao_2026-01-31.xlsx');
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [stats, setStats] = useState<MaintenanceStats>({
     total: 0,
@@ -62,10 +65,41 @@ export default function Index() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadData = async () => {
+  const getPlanEquipmentLimit = useCallback((): number | null => {
+    const license = LicenseService.getLocalLicense();
+    if (!license) return null;
+
+    if (license.status === 'invalid' || license.status === 'suspended' || license.status === 'expired') {
+      return 0;
+    }
+
+    return Math.max(0, license.maxEquipment || 0);
+  }, []);
+
+  const applyEquipmentLimit = useCallback(
+    (data: Equipment[], sourceLabel: string): Equipment[] => {
+      const limit = getPlanEquipmentLimit();
+      if (limit === null) {
+        return data;
+      }
+
+      if (data.length <= limit) {
+        return data;
+      }
+
+      toast.warning(
+        `Plano atual permite ${limit} equipamentos. ${sourceLabel}: exibindo ${limit} de ${data.length}.`
+      );
+      return data.slice(0, limit);
+    },
+    [getPlanEquipmentLimit]
+  );
+
+  const loadData = useCallback(async (preferredPath?: string) => {
     setIsLoading(true);
     try {
-      const data = await loadDefaultData();
+      const rawData = await loadDefaultData(preferredPath || dataSourcePath);
+      const data = applyEquipmentLimit(rawData, 'Carregamento padrão');
       setEquipment(data);
       setStats(calculateStats(data));
       setLastUpdate(new Date());
@@ -76,16 +110,22 @@ export default function Index() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dataSourcePath, applyEquipmentLimit]);
 
   useEffect(() => {
-    loadData();
+    loadData(dataSourcePath);
+  }, [dataSourcePath, loadData]);
+
+  const handleDataSourceChange = useCallback((path: string) => {
+    setDataSourcePath(path);
+    toast.info('Fonte de dados alterada. Recarregando planilha...');
   }, []);
 
   const handleImport = async (file: File) => {
     setIsLoading(true);
     try {
-      const data = await parseExcelFile(file);
+      const importedData = await parseExcelFile(file);
+      const data = applyEquipmentLimit(importedData, 'Importação');
       setEquipment(data);
       setStats(calculateStats(data));
       setLastUpdate(new Date());
@@ -121,6 +161,47 @@ export default function Index() {
   const handleFilterClick = (filter: StatusFilter) => {
     setStatusFilter(current => current === filter ? 'all' : filter);
   };
+
+  const handleAddEquipment = useCallback((newEquipment: Equipment) => {
+    setEquipment(prevEquipment => {
+      const limit = getPlanEquipmentLimit();
+      if (limit !== null && prevEquipment.length >= limit) {
+        toast.error(`Limite do plano atingido: ${limit} equipamentos.`);
+        return prevEquipment;
+      }
+
+      const tagExists = prevEquipment.some(
+        eq => eq.tag.toUpperCase() === newEquipment.tag.toUpperCase()
+      );
+
+      if (tagExists) {
+        toast.error(`Já existe equipamento com TAG ${newEquipment.tag}`);
+        return prevEquipment;
+      }
+
+      const updatedEquipment = [...prevEquipment, newEquipment];
+      setStats(calculateStats(updatedEquipment));
+      setLastUpdate(new Date());
+      toast.success(`Equipamento ${newEquipment.tag} adicionado com sucesso!`);
+      return updatedEquipment;
+    });
+  }, [getPlanEquipmentLimit]);
+
+  const handleDeleteEquipment = useCallback((equipmentId: string) => {
+    setEquipment(prevEquipment => {
+      const equipmentToDelete = prevEquipment.find(eq => eq.id === equipmentId);
+      if (!equipmentToDelete) {
+        toast.error('Equipamento não encontrado');
+        return prevEquipment;
+      }
+
+      const updatedEquipment = prevEquipment.filter(eq => eq.id !== equipmentId);
+      setStats(calculateStats(updatedEquipment));
+      setLastUpdate(new Date());
+      toast.success(`Equipamento ${equipmentToDelete.tag} removido com sucesso!`);
+      return updatedEquipment;
+    });
+  }, []);
 
   const handleMaintenanceDateChange = useCallback((
     equipmentId: string, 
@@ -225,7 +306,9 @@ export default function Index() {
         onExport={handleExport}
         onExportHistory={handleExportHistory}
         onImport={handleImport}
-        onRefresh={loadData}
+        onRefresh={() => loadData(dataSourcePath)}
+        onDataSourceChange={handleDataSourceChange}
+        dataSourcePath={dataSourcePath}
         onGetExportData={() => exportToPowerBIData(equipment)}
         lastUpdate={lastUpdate}
       />
@@ -356,6 +439,12 @@ export default function Index() {
         <div className="mb-6">
           <MaintenanceTimeline equipment={equipment} />
         </div>
+
+        <EquipmentManagerCard
+          equipment={equipment}
+          onAddEquipment={handleAddEquipment}
+          onDeleteEquipment={handleDeleteEquipment}
+        />
 
         {/* Main Content Grid */}
         <div className="grid xl:grid-cols-4 gap-6">

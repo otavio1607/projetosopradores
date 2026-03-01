@@ -1,4 +1,4 @@
-import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User } from 'lucide-react';
+import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
@@ -10,11 +10,22 @@ interface HeaderProps {
   onExportHistory: () => void;
   onImport: (file: File) => void;
   onRefresh: () => void;
+  onDataSourceChange: (path: string) => void;
+  dataSourcePath: string;
   onGetExportData: () => Uint8Array;
   lastUpdate: Date;
 }
 
-export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetExportData, lastUpdate }: HeaderProps) {
+export function Header({
+  onExport,
+  onExportHistory,
+  onImport,
+  onRefresh,
+  onDataSourceChange,
+  dataSourcePath,
+  onGetExportData,
+  lastUpdate,
+}: HeaderProps) {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -96,6 +107,27 @@ export function Header({ onExport, onExportHistory, onImport, onRefresh, onGetEx
               <RefreshCw className="h-4 w-4" />
               Atualizar
             </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/billing')}
+              className="gap-2"
+            >
+              <CreditCard className="h-4 w-4" />
+              Mensalidade
+            </Button>
+
+            <select
+              value={dataSourcePath}
+              onChange={e => onDataSourceChange(e.target.value)}
+              className="h-9 rounded-md border border-border bg-background px-2 text-xs text-foreground"
+              title="Selecionar fonte da planilha"
+            >
+              <option value="/downloads/Sopradores_Manutencao_2026-01-31.xlsx">Planilha Downloads (oficial)</option>
+              <option value="/downloads/equipamentos.xlsx">Planilha Downloads (equipamentos.xlsx)</option>
+              <option value="/data/equipamentos.xlsx">Planilha Data (equipamentos.xlsx)</option>
+            </select>
             
             <label className="cursor-pointer">
               <input

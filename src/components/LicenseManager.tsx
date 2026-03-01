@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -34,16 +34,7 @@ export function LicenseManager({ onLicenseValidated, onError }: LicenseManagerPr
   const [copied, setCopied] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
 
-  useEffect(() => {
-    // Carrega licença ao montar
-    const localLicense = LicenseService.getLocalLicense();
-    if (localLicense) {
-      setLicense(localLicense);
-      validateLicense(localLicense.key);
-    }
-  }, []);
-
-  const validateLicense = async (key: string) => {
+  const validateLicense = useCallback(async (key: string) => {
     setIsLoading(true);
     try {
       const result = await LicenseService.validateLicense(key);
@@ -60,7 +51,16 @@ export function LicenseManager({ onLicenseValidated, onError }: LicenseManagerPr
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onLicenseValidated, onError]);
+
+  useEffect(() => {
+    // Carrega licença ao montar
+    const localLicense = LicenseService.getLocalLicense();
+    if (localLicense) {
+      setLicense(localLicense);
+      validateLicense(localLicense.key);
+    }
+  }, [validateLicense]);
 
   const handleActivateLicense = async () => {
     if (!licenseKey.trim()) return;

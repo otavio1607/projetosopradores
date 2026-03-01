@@ -20,6 +20,7 @@ interface PaymentFormProps {
 }
 
 export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
+  const pixKey = '14997525748';
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success' | 'error'>(
@@ -147,7 +148,7 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
               <Label htmlFor="pix" className="flex-1 cursor-pointer">
                 <div>
                   <p className="font-semibold">📱 Pix</p>
-                  <p className="text-sm text-gray-600">Transferência instantânea (sem taxas)</p>
+                  <p className="text-sm text-gray-600">Transferência instantânea (sem taxas) • Chave: {pixKey}</p>
                 </div>
               </Label>
               <Badge>Recomendado</Badge>
@@ -313,6 +314,30 @@ export function PaymentForm({ plan, onSuccess, onError }: PaymentFormProps) {
 
             <p className="text-sm text-gray-600">
               Abra seu banco ou app de pagamentos, selecione Pix e scaneie o código.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {paymentMethod === 'pix' && !pixData && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle>Chave Pix para Pagamento</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Label>Chave Pix (copia e cola)</Label>
+            <div className="flex gap-2">
+              <Input readOnly value={pixKey} className="font-mono" />
+              <Button
+                size="icon"
+                variant="outline"
+                onClick={() => navigator.clipboard.writeText(pixKey)}
+              >
+                <Copy className="w-4 h-4" />
+              </Button>
+            </div>
+            <p className="text-sm text-gray-600">
+              Use esta chave para receber o pagamento via Pix.
             </p>
           </CardContent>
         </Card>

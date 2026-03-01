@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,11 +35,7 @@ export function SubscriptionPanel({ userId, onSubscriptionChanged }: Subscriptio
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadSubscriptionData();
-  }, [userId]);
-
-  const loadSubscriptionData = async () => {
+  const loadSubscriptionData = useCallback(async () => {
     try {
       setIsLoading(true);
       const [sub, payments, invoices] = await Promise.all([
@@ -57,7 +53,11 @@ export function SubscriptionPanel({ userId, onSubscriptionChanged }: Subscriptio
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    loadSubscriptionData();
+  }, [loadSubscriptionData]);
 
   const handleCancelSubscription = async () => {
     if (!subscription) return;

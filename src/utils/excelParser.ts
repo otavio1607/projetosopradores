@@ -171,26 +171,49 @@ export async function parseExcelFile(file: File | ArrayBuffer): Promise<Equipmen
   const sheetNames = workbook.SheetNames;
   console.log('Sheet names:', sheetNames);
 
-  // Check if this is our multi-sheet format (Sopradores + Manutenções)
-  const hasMaintenanceSheet = sheetNames.length >= 3;
+  const normalizeSheetName = (name: string) =>
+    name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase();
+
+  const maintenanceSheetName = sheetNames.find(name =>
+    normalizeSheetName(name).includes('manutenc')
+  );
+
+  const equipmentSheetName = sheetNames.find(name => {
+    const normalized = normalizeSheetName(name);
+    return normalized.includes('soprador') || normalized.includes('equip');
+  });
+
+  // Considera multi-sheet quando existe aba de manutenção e ao menos 2 abas
+  const hasMaintenanceSheet = !!maintenanceSheetName && sheetNames.length >= 2;
 
   if (hasMaintenanceSheet) {
-    return parseMultiSheetWorkbook(workbook);
+    return parseMultiSheetWorkbook(workbook, {
+      equipmentSheetName,
+      maintenanceSheetName,
+    });
   }
 
   // Fallback: single-sheet format (legacy)
   return parseSingleSheetWorkbook(workbook);
 }
 
-function parseMultiSheetWorkbook(workbook: XLSX.WorkBook): Equipment[] {
+function parseMultiSheetWorkbook(
+  workbook: XLSX.WorkBook,
+  options?: { equipmentSheetName?: string; maintenanceSheetName?: string }
+): Equipment[] {
   const sheetNames = workbook.SheetNames;
 
-  // Sheet 1: Equipment base data (Sopradores)
-  const equipSheet = workbook.Sheets[sheetNames[0]];
+  // Equipment base data (Sopradores)
+  const equipmentSheetName = options?.equipmentSheetName || sheetNames[0];
+  const equipSheet = workbook.Sheets[equipmentSheetName];
   const equipRows = parseEquipmentSheet(equipSheet);
 
-  // Sheet 3: Maintenance records (Manutenções)
-  const maintSheet = workbook.Sheets[sheetNames[2]];
+  // Maintenance records (Manutenções)
+  const maintenanceSheetName = options?.maintenanceSheetName || sheetNames[sheetNames.length - 1];
+  const maintSheet = workbook.Sheets[maintenanceSheetName];
   const maintRows = parseMaintenanceSheet(maintSheet);
 
   // Group maintenance records by TAG
@@ -310,12 +333,33 @@ function parseSingleSheetWorkbook(workbook: XLSX.WorkBook): Equipment[] {
   return equipment;
 }
 
-export async function loadDefaultData(): Promise<Equipment[]> {
+export async function loadDefaultData(preferredPath?: string): Promise<Equipment[]> {
+  const basePaths = [
+    '/downloads/Sopradores_Manutencao_2026-01-31.xlsx',
+    '/downloads/equipamentos.xlsx',
+    '/data/equipamentos.xlsx',
+  ];
+
+  const candidatePaths = [preferredPath, ...basePaths].filter(
+    (path, index, allPaths): path is string => !!path && allPaths.indexOf(path) === index
+  );
+
   try {
-    const response = await fetch('/data/equipamentos.xlsx');
-    if (!response.ok) throw new Error('File not found');
-    const arrayBuffer = await response.arrayBuffer();
-    return parseExcelFile(arrayBuffer);
+    for (const path of candidatePaths) {
+      const cacheBuster = `t=${Date.now()}`;
+      const response = await fetch(`${path}?${cacheBuster}`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        continue;
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      return parseExcelFile(arrayBuffer);
+    }
+
+    throw new Error('Nenhum arquivo Excel padrão encontrado');
   } catch (error) {
     console.log('Loading sample data...', error);
     return generateSampleData();
