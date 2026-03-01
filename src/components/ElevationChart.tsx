@@ -7,17 +7,17 @@ interface ElevationChartProps {
 }
 
 export function ElevationChart({ equipment }: ElevationChartProps) {
-  const elevations = [...new Set(equipment.map(e => e.elevacao))].sort((a, b) => a - b);
+  const elevations = [...new Set(equipment.map(equipmentItem => equipmentItem.elevacao))].sort((a, b) => a - b);
 
-  const data = elevations.map(elev => {
-    const equips = equipment.filter(e => e.elevacao === elev);
+  const data = elevations.map(elevation => {
+    const equipmentsAtElevation = equipment.filter(equipmentItem => equipmentItem.elevacao === elevation);
     return {
-      name: `${elev}º`,
-      'Em Dia': equips.filter(e => e.statusGeral === 'ok').length,
-      'Atenção': equips.filter(e => e.statusGeral === 'warning').length,
-      'Crítico': equips.filter(e => e.statusGeral === 'critical').length,
-      'Atrasado': equips.filter(e => e.statusGeral === 'overdue').length,
-      total: equips.length,
+      name: `${elevation}º`,
+      'Em Dia': equipmentsAtElevation.filter(equipmentItem => equipmentItem.statusGeral === 'ok').length,
+      'Atenção': equipmentsAtElevation.filter(equipmentItem => equipmentItem.statusGeral === 'warning').length,
+      'Crítico': equipmentsAtElevation.filter(equipmentItem => equipmentItem.statusGeral === 'critical').length,
+      'Atrasado': equipmentsAtElevation.filter(equipmentItem => equipmentItem.statusGeral === 'overdue').length,
+      total: equipmentsAtElevation.length,
     };
   });
 

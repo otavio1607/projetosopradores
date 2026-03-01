@@ -27,37 +27,37 @@ const STATUS_CONFIG = {
 export function MaintenanceTimeline({ equipment }: MaintenanceTimelineProps) {
   // Collect all maintenance events with dates
   const events: TimelineEvent[] = [];
-  equipment.forEach(e => {
-    e.manutencoes.forEach(m => {
-      if (m.proximaManutencao && m.diasRestantes !== null) {
+  equipment.forEach(equipmentItem => {
+    equipmentItem.manutencoes.forEach(maintenanceRecord => {
+      if (maintenanceRecord.proximaManutencao && maintenanceRecord.diasRestantes !== null) {
         events.push({
-          tag: e.tag,
-          area: e.area,
-          elevacao: e.elevacao,
-          service: m.label,
-          date: new Date(m.proximaManutencao),
-          daysRemaining: m.diasRestantes,
-          status: m.status,
+          tag: equipmentItem.tag,
+          area: equipmentItem.area,
+          elevacao: equipmentItem.elevacao,
+          service: maintenanceRecord.label,
+          date: new Date(maintenanceRecord.proximaManutencao),
+          daysRemaining: maintenanceRecord.diasRestantes,
+          status: maintenanceRecord.status,
         });
       }
     });
   });
 
   // Sort: overdue first (most overdue), then by date ascending
-  events.sort((a, b) => {
-    const priorityA = a.status === 'overdue' ? 0 : a.status === 'critical' ? 1 : a.status === 'warning' ? 2 : 3;
-    const priorityB = b.status === 'overdue' ? 0 : b.status === 'critical' ? 1 : b.status === 'warning' ? 2 : 3;
+  events.sort((eventA, eventB) => {
+    const priorityA = eventA.status === 'overdue' ? 0 : eventA.status === 'critical' ? 1 : eventA.status === 'warning' ? 2 : 3;
+    const priorityB = eventB.status === 'overdue' ? 0 : eventB.status === 'critical' ? 1 : eventB.status === 'warning' ? 2 : 3;
     if (priorityA !== priorityB) return priorityA - priorityB;
-    return a.daysRemaining - b.daysRemaining;
+    return eventA.daysRemaining - eventB.daysRemaining;
   });
 
   // Show top 50 most urgent
   const displayEvents = events.slice(0, 50);
 
   // Group by status for summary
-  const overdue = events.filter(e => e.status === 'overdue').length;
-  const critical = events.filter(e => e.status === 'critical').length;
-  const warning = events.filter(e => e.status === 'warning').length;
+  const overdue = events.filter(event => event.status === 'overdue').length;
+  const critical = events.filter(event => event.status === 'critical').length;
+  const warning = events.filter(event => event.status === 'warning').length;
 
   return (
     <div className="industrial-card">
@@ -91,13 +91,13 @@ export function MaintenanceTimeline({ equipment }: MaintenanceTimelineProps) {
         <div className="absolute left-3 top-0 bottom-0 w-px bg-border" />
 
         <div className="space-y-1">
-          {displayEvents.map((event, idx) => {
+          {displayEvents.map((event, eventIndex) => {
             const config = STATUS_CONFIG[event.status];
             const Icon = config.icon;
 
             return (
               <div
-                key={idx}
+                key={eventIndex}
                 className={cn(
                   'relative pl-8 pr-3 py-2 rounded-lg transition-all hover:bg-muted/30',
                   event.status === 'overdue' && 'bg-status-overdue/5',

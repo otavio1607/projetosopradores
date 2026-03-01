@@ -20,11 +20,11 @@ function getStatus(daysRemaining: number | null): 'ok' | 'warning' | 'critical' 
 }
 
 function getOverallStatus(manutencoes: MaintenanceRecord[]): 'ok' | 'warning' | 'critical' | 'overdue' {
-  const hasOverdue = manutencoes.some(m => m.status === 'overdue');
+  const hasOverdue = manutencoes.some(maintenanceRecord => maintenanceRecord.status === 'overdue');
   if (hasOverdue) return 'overdue';
-  const hasCritical = manutencoes.some(m => m.status === 'critical');
+  const hasCritical = manutencoes.some(maintenanceRecord => maintenanceRecord.status === 'critical');
   if (hasCritical) return 'critical';
-  const hasWarning = manutencoes.some(m => m.status === 'warning');
+  const hasWarning = manutencoes.some(maintenanceRecord => maintenanceRecord.status === 'warning');
   if (hasWarning) return 'warning';
   return 'ok';
 }
@@ -201,13 +201,13 @@ function parseMultiSheetWorkbook(workbook: XLSX.WorkBook): Equipment[] {
     maintByTag.set(row.tag, existing);
   }
 
-  const equipment: Equipment[] = equipRows.map((equip, index) => {
-    const tagMaint = maintByTag.get(equip.tag) || [];
+  const equipment: Equipment[] = equipRows.map((equipmentRow, index) => {
+    const tagMaint = maintByTag.get(equipmentRow.tag) || [];
 
     // Build maintenance records from the maintenance sheet
     const manutencoes: MaintenanceRecord[] = MAINTENANCE_TYPES.map(type => {
-      const matchingRow = tagMaint.find(m => {
-        const typeId = maintenanceNameToId[m.tipoManutencao];
+      const matchingRow = tagMaint.find(maintenanceRow => {
+        const typeId = maintenanceNameToId[maintenanceRow.tipoManutencao];
         return typeId === type.id;
       });
 
@@ -239,28 +239,28 @@ function parseMultiSheetWorkbook(workbook: XLSX.WorkBook): Equipment[] {
       };
     });
 
-    const validManutencoes = manutencoes.filter(m => m.proximaManutencao !== null);
+    const validManutencoes = manutencoes.filter(maintenanceRecord => maintenanceRecord.proximaManutencao !== null);
     const proximaManutencaoGeral = validManutencoes.length > 0
-      ? validManutencoes.reduce((min, m) =>
-          !min || (m.proximaManutencao && m.proximaManutencao < min) ? m.proximaManutencao : min,
+      ? validManutencoes.reduce((earliestDate, maintenanceRecord) =>
+          !earliestDate || (maintenanceRecord.proximaManutencao && maintenanceRecord.proximaManutencao < earliestDate) ? maintenanceRecord.proximaManutencao : earliestDate,
           null as Date | null
         )
       : null;
     const diasRestantesGeral = validManutencoes.length > 0
-      ? validManutencoes.reduce((min, m) =>
-          m.diasRestantes !== null && (min === null || m.diasRestantes < min) ? m.diasRestantes : min,
+      ? validManutencoes.reduce((minDays, maintenanceRecord) =>
+          maintenanceRecord.diasRestantes !== null && (minDays === null || maintenanceRecord.diasRestantes < minDays) ? maintenanceRecord.diasRestantes : minDays,
           null as number | null
         )
       : null;
 
     return {
       id: `equip-${index + 1}`,
-      tag: equip.tag,
-      elevacao: equip.elevacao,
-      altura: equip.altura,
-      descricao: `Soprador de Fuligem ${equip.tipo}`,
-      area: equip.area,
-      tipo: equip.tipo,
+      tag: equipmentRow.tag,
+      elevacao: equipmentRow.elevacao,
+      altura: equipmentRow.altura,
+      descricao: `Soprador de Fuligem ${equipmentRow.tipo}`,
+      area: equipmentRow.area,
+      tipo: equipmentRow.tipo,
       manutencoes,
       statusGeral: getOverallStatus(manutencoes),
       proximaManutencaoGeral,
@@ -367,13 +367,13 @@ function generateSampleData(): Equipment[] {
     });
 
     const statusGeral = getOverallStatus(manutencoes);
-    const validManutencoes = manutencoes.filter(m => m.proximaManutencao !== null);
-    const proximaManutencaoGeral = validManutencoes.reduce((min, m) =>
-      !min || (m.proximaManutencao && m.proximaManutencao < min) ? m.proximaManutencao : min,
+    const validManutencoes = manutencoes.filter(maintenanceRecord => maintenanceRecord.proximaManutencao !== null);
+    const proximaManutencaoGeral = validManutencoes.reduce((earliestDate, maintenanceRecord) =>
+      !earliestDate || (maintenanceRecord.proximaManutencao && maintenanceRecord.proximaManutencao < earliestDate) ? maintenanceRecord.proximaManutencao : earliestDate,
       null as Date | null
     );
-    const diasRestantesGeral = validManutencoes.reduce((min, m) =>
-      m.diasRestantes !== null && (min === null || m.diasRestantes < min) ? m.diasRestantes : min,
+    const diasRestantesGeral = validManutencoes.reduce((minDays, maintenanceRecord) =>
+      maintenanceRecord.diasRestantes !== null && (minDays === null || maintenanceRecord.diasRestantes < minDays) ? maintenanceRecord.diasRestantes : minDays,
       null as number | null
     );
 
@@ -398,10 +398,10 @@ function generateSampleData(): Equipment[] {
 export function calculateStats(equipment: Equipment[]): MaintenanceStats {
   return {
     total: equipment.length,
-    emDia: equipment.filter(e => e.statusGeral === 'ok').length,
-    atencao: equipment.filter(e => e.statusGeral === 'warning').length,
-    critico: equipment.filter(e => e.statusGeral === 'critical').length,
-    atrasado: equipment.filter(e => e.statusGeral === 'overdue').length,
+    emDia: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'ok').length,
+    atencao: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'warning').length,
+    critico: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'critical').length,
+    atrasado: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'overdue').length,
   };
 }
 
@@ -409,28 +409,28 @@ export function exportToPowerBI(equipment: Equipment[]): void {
   const workbook = XLSX.utils.book_new();
 
   // ========== ABA 1: DADOS PRINCIPAIS ==========
-  const mainData: any[] = equipment.map(e => {
+  const mainData: any[] = equipment.map(equipmentItem => {
     const row: any = {
-      TAG: e.tag,
-      Área: e.area,
-      Elevação: e.elevacao,
-      'Altura (m)': e.altura,
-      Tipo: e.tipo,
-      'Status Geral': e.statusGeral === 'ok' ? 'Em Dia' :
-                      e.statusGeral === 'warning' ? 'Atenção' :
-                      e.statusGeral === 'critical' ? 'Crítico' : 'Atrasado',
-      'Próxima Manutenção': e.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
-      'Dias Restantes': e.diasRestantesGeral ?? '',
+      TAG: equipmentItem.tag,
+      Área: equipmentItem.area,
+      Elevação: equipmentItem.elevacao,
+      'Altura (m)': equipmentItem.altura,
+      Tipo: equipmentItem.tipo,
+      'Status Geral': equipmentItem.statusGeral === 'ok' ? 'Em Dia' :
+                      equipmentItem.statusGeral === 'warning' ? 'Atenção' :
+                      equipmentItem.statusGeral === 'critical' ? 'Crítico' : 'Atrasado',
+      'Próxima Manutenção': equipmentItem.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
+      'Dias Restantes': equipmentItem.diasRestantesGeral ?? '',
     };
 
     // Add each maintenance type as columns
-    e.manutencoes.forEach(m => {
-      row[m.label] = m.proximaManutencao?.toLocaleDateString('pt-BR') || '';
-      row[`${m.label} - Dias`] = m.diasRestantes ?? '';
-      row[`${m.label} - Status`] = m.status === 'ok' ? 'Em Dia' :
-                                    m.status === 'warning' ? 'Atenção' :
-                                    m.status === 'critical' ? 'Crítico' :
-                                    m.status === 'overdue' ? 'Atrasado' : 'Pendente';
+    equipmentItem.manutencoes.forEach(maintenanceRecord => {
+      row[maintenanceRecord.label] = maintenanceRecord.proximaManutencao?.toLocaleDateString('pt-BR') || '';
+      row[`${maintenanceRecord.label} - Dias`] = maintenanceRecord.diasRestantes ?? '';
+      row[`${maintenanceRecord.label} - Status`] = maintenanceRecord.status === 'ok' ? 'Em Dia' :
+                                    maintenanceRecord.status === 'warning' ? 'Atenção' :
+                                    maintenanceRecord.status === 'critical' ? 'Crítico' :
+                                    maintenanceRecord.status === 'overdue' ? 'Atrasado' : 'Pendente';
     });
 
     row['Data Exportação'] = new Date().toISOString();
@@ -441,17 +441,17 @@ export function exportToPowerBI(equipment: Equipment[]): void {
   XLSX.utils.book_append_sheet(workbook, mainSheet, 'Dados Principais');
 
   // ========== ABA 2: RESUMO POR ELEVAÇÃO ==========
-  const elevations = [...new Set(equipment.map(e => e.elevacao))].sort((a, b) => b - a);
-  const elevationSummary = elevations.map(elev => {
-    const equipsInElev = equipment.filter(e => e.elevacao === elev);
+  const elevations = [...new Set(equipment.map(equipmentItem => equipmentItem.elevacao))].sort((a, b) => b - a);
+  const elevationSummary = elevations.map(elevation => {
+    const equipsInElev = equipment.filter(equipmentItem => equipmentItem.elevacao === elevation);
     return {
-      Elevação: elev,
+      Elevação: elevation,
       'Total Equipamentos': equipsInElev.length,
-      'Em Dia': equipsInElev.filter(e => e.statusGeral === 'ok').length,
-      'Atenção': equipsInElev.filter(e => e.statusGeral === 'warning').length,
-      'Crítico': equipsInElev.filter(e => e.statusGeral === 'critical').length,
-      'Atrasado': equipsInElev.filter(e => e.statusGeral === 'overdue').length,
-      '% Crítico/Atrasado': ((equipsInElev.filter(e => e.statusGeral === 'critical' || e.statusGeral === 'overdue').length / equipsInElev.length) * 100).toFixed(1) + '%',
+      'Em Dia': equipsInElev.filter(equipmentItem => equipmentItem.statusGeral === 'ok').length,
+      'Atenção': equipsInElev.filter(equipmentItem => equipmentItem.statusGeral === 'warning').length,
+      'Crítico': equipsInElev.filter(equipmentItem => equipmentItem.statusGeral === 'critical').length,
+      'Atrasado': equipsInElev.filter(equipmentItem => equipmentItem.statusGeral === 'overdue').length,
+      '% Crítico/Atrasado': ((equipsInElev.filter(equipmentItem => equipmentItem.statusGeral === 'critical' || equipmentItem.statusGeral === 'overdue').length / equipsInElev.length) * 100).toFixed(1) + '%',
     };
   });
 
@@ -466,8 +466,8 @@ export function exportToPowerBI(equipment: Equipment[]): void {
     let totalEmDia = 0;
     let totalPendente = 0;
 
-    equipment.forEach(e => {
-      const maint = e.manutencoes.find(x => x.typeId === type.id);
+    equipment.forEach(equipmentItem => {
+      const maint = equipmentItem.manutencoes.find(maintenanceRecord => maintenanceRecord.typeId === type.id);
       if (maint) {
         if (maint.status === 'overdue') totalAtrasado++;
         else if (maint.status === 'critical') totalCritico++;
@@ -496,50 +496,50 @@ export function exportToPowerBI(equipment: Equipment[]): void {
 
   // ========== ABA 4: TIMELINE (GANTT) ==========
   const timelineData: any[] = [];
-  equipment.forEach(e => {
-    e.manutencoes.forEach(m => {
-      if (m.proximaManutencao) {
+  equipment.forEach(equipmentItem => {
+    equipmentItem.manutencoes.forEach(maintenanceRecord => {
+      if (maintenanceRecord.proximaManutencao) {
         timelineData.push({
-          TAG: e.tag,
-          Área: e.area,
-          Elevação: e.elevacao,
-          'Tipo Serviço': m.label,
-          'Periodicidade': m.periodicidade,
-          'Data Programada': m.proximaManutencao.toLocaleDateString('pt-BR'),
-          'Data ISO': m.proximaManutencao.toISOString().split('T')[0],
-          'Dias Restantes': m.diasRestantes,
-          Status: m.status === 'ok' ? 'Em Dia' :
-                  m.status === 'warning' ? 'Atenção' :
-                  m.status === 'critical' ? 'Crítico' :
-                  m.status === 'overdue' ? 'Atrasado' : 'Pendente',
-          'Prioridade': m.status === 'overdue' ? 1 :
-                        m.status === 'critical' ? 2 :
-                        m.status === 'warning' ? 3 : 4,
+          TAG: equipmentItem.tag,
+          Área: equipmentItem.area,
+          Elevação: equipmentItem.elevacao,
+          'Tipo Serviço': maintenanceRecord.label,
+          'Periodicidade': maintenanceRecord.periodicidade,
+          'Data Programada': maintenanceRecord.proximaManutencao.toLocaleDateString('pt-BR'),
+          'Data ISO': maintenanceRecord.proximaManutencao.toISOString().split('T')[0],
+          'Dias Restantes': maintenanceRecord.diasRestantes,
+          Status: maintenanceRecord.status === 'ok' ? 'Em Dia' :
+                  maintenanceRecord.status === 'warning' ? 'Atenção' :
+                  maintenanceRecord.status === 'critical' ? 'Crítico' :
+                  maintenanceRecord.status === 'overdue' ? 'Atrasado' : 'Pendente',
+          'Prioridade': maintenanceRecord.status === 'overdue' ? 1 :
+                        maintenanceRecord.status === 'critical' ? 2 :
+                        maintenanceRecord.status === 'warning' ? 3 : 4,
         });
       }
     });
   });
 
-  timelineData.sort((a, b) => {
-    if (a['Prioridade'] !== b['Prioridade']) return a['Prioridade'] - b['Prioridade'];
-    return (a['Dias Restantes'] ?? 999) - (b['Dias Restantes'] ?? 999);
+  timelineData.sort((itemA, itemB) => {
+    if (itemA['Prioridade'] !== itemB['Prioridade']) return itemA['Prioridade'] - itemB['Prioridade'];
+    return (itemA['Dias Restantes'] ?? 999) - (itemB['Dias Restantes'] ?? 999);
   });
 
   const timelineSheet = XLSX.utils.json_to_sheet(timelineData);
   XLSX.utils.book_append_sheet(workbook, timelineSheet, 'Timeline Manutenções');
 
   // ========== ABA 5: DISTRIBUIÇÃO POR ÁREA ==========
-  const areas = [...new Set(equipment.map(e => e.area))];
+  const areas = [...new Set(equipment.map(equipmentItem => equipmentItem.area))];
   const areaData = areas.map(area => {
-    const equipsInArea = equipment.filter(e => e.area === area);
+    const equipsInArea = equipment.filter(equipmentItem => equipmentItem.area === area);
     return {
       'Área': area,
       'Quantidade': equipsInArea.length,
       'Percentual': ((equipsInArea.length / equipment.length) * 100).toFixed(1) + '%',
-      'Em Dia': equipsInArea.filter(e => e.statusGeral === 'ok').length,
-      'Atenção': equipsInArea.filter(e => e.statusGeral === 'warning').length,
-      'Crítico': equipsInArea.filter(e => e.statusGeral === 'critical').length,
-      'Atrasado': equipsInArea.filter(e => e.statusGeral === 'overdue').length,
+      'Em Dia': equipsInArea.filter(equipmentItem => equipmentItem.statusGeral === 'ok').length,
+      'Atenção': equipsInArea.filter(equipmentItem => equipmentItem.statusGeral === 'warning').length,
+      'Crítico': equipsInArea.filter(equipmentItem => equipmentItem.statusGeral === 'critical').length,
+      'Atrasado': equipsInArea.filter(equipmentItem => equipmentItem.statusGeral === 'overdue').length,
     };
   });
 
@@ -549,14 +549,14 @@ export function exportToPowerBI(equipment: Equipment[]): void {
   // ========== ABA 6: RESUMO GERAL ==========
   const summaryData = [
     { Métrica: 'Total de Sopradores', Valor: equipment.length },
-    { Métrica: 'Em Dia', Valor: equipment.filter(e => e.statusGeral === 'ok').length },
-    { Métrica: 'Atenção', Valor: equipment.filter(e => e.statusGeral === 'warning').length },
-    { Métrica: 'Crítico', Valor: equipment.filter(e => e.statusGeral === 'critical').length },
-    { Métrica: 'Atrasado', Valor: equipment.filter(e => e.statusGeral === 'overdue').length },
+    { Métrica: 'Em Dia', Valor: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'ok').length },
+    { Métrica: 'Atenção', Valor: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'warning').length },
+    { Métrica: 'Crítico', Valor: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'critical').length },
+    { Métrica: 'Atrasado', Valor: equipment.filter(equipmentItem => equipmentItem.statusGeral === 'overdue').length },
     { Métrica: 'Total de Elevações', Valor: elevations.length },
     { Métrica: 'Total de Áreas', Valor: areas.length },
     { Métrica: 'Tipos de Manutenção', Valor: MAINTENANCE_TYPES.length },
-    { Métrica: 'Manutenções Urgentes (Total)', Valor: timelineData.filter(t => t['Prioridade'] <= 2).length },
+    { Métrica: 'Manutenções Urgentes (Total)', Valor: timelineData.filter(timelineItem => timelineItem['Prioridade'] <= 2).length },
     { Métrica: 'Data da Exportação', Valor: new Date().toLocaleDateString('pt-BR') },
     { Métrica: 'Hora da Exportação', Valor: new Date().toLocaleTimeString('pt-BR') },
   ];
@@ -580,29 +580,29 @@ export function exportHistoryCSV(equipment: Equipment[]): void {
   const rows: string[][] = [];
   const today = new Date();
 
-  equipment.forEach(e => {
-    e.manutencoes.forEach(m => {
-      const statusLabel = m.status === 'ok' ? 'Em Dia' :
-                          m.status === 'warning' ? 'Atenção' :
-                          m.status === 'critical' ? 'Crítico' :
-                          m.status === 'overdue' ? 'Atrasado' : 'Pendente';
+  equipment.forEach(equipmentItem => {
+    equipmentItem.manutencoes.forEach(maintenanceRecord => {
+      const statusLabel = maintenanceRecord.status === 'ok' ? 'Em Dia' :
+                          maintenanceRecord.status === 'warning' ? 'Atenção' :
+                          maintenanceRecord.status === 'critical' ? 'Crítico' :
+                          maintenanceRecord.status === 'overdue' ? 'Atrasado' : 'Pendente';
 
       // "Data Conclusão" is the ultimaManutencao if available
-      const dataConclusao = m.ultimaManutencao
-        ? m.ultimaManutencao.toLocaleDateString('pt-BR')
+      const dataConclusao = maintenanceRecord.ultimaManutencao
+        ? maintenanceRecord.ultimaManutencao.toLocaleDateString('pt-BR')
         : '';
 
       rows.push([
-        e.tag,
-        e.area,
-        String(e.elevacao),
-        String(e.altura),
-        e.tipo,
-        m.label,
-        m.periodicidade,
-        m.ultimaManutencao?.toLocaleDateString('pt-BR') || '',
-        m.proximaManutencao?.toLocaleDateString('pt-BR') || '',
-        m.diasRestantes !== null ? String(m.diasRestantes) : '',
+        equipmentItem.tag,
+        equipmentItem.area,
+        String(equipmentItem.elevacao),
+        String(equipmentItem.altura),
+        equipmentItem.tipo,
+        maintenanceRecord.label,
+        maintenanceRecord.periodicidade,
+        maintenanceRecord.ultimaManutencao?.toLocaleDateString('pt-BR') || '',
+        maintenanceRecord.proximaManutencao?.toLocaleDateString('pt-BR') || '',
+        maintenanceRecord.diasRestantes !== null ? String(maintenanceRecord.diasRestantes) : '',
         statusLabel,
         dataConclusao,
         today.toLocaleDateString('pt-BR'),
@@ -628,25 +628,25 @@ export function exportToPowerBIData(equipment: Equipment[]): Uint8Array {
   const workbook = XLSX.utils.book_new();
 
   // Reuse same structure as exportToPowerBI
-  const mainData: any[] = equipment.map(e => {
+  const mainData: any[] = equipment.map(equipmentItem => {
     const row: any = {
-      TAG: e.tag,
-      Área: e.area,
-      Elevação: e.elevacao,
-      'Altura (m)': e.altura,
-      Tipo: e.tipo,
-      'Status Geral': e.statusGeral === 'ok' ? 'Em Dia' :
-                      e.statusGeral === 'warning' ? 'Atenção' :
-                      e.statusGeral === 'critical' ? 'Crítico' : 'Atrasado',
-      'Próxima Manutenção': e.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
-      'Dias Restantes': e.diasRestantesGeral ?? '',
+      TAG: equipmentItem.tag,
+      Área: equipmentItem.area,
+      Elevação: equipmentItem.elevacao,
+      'Altura (m)': equipmentItem.altura,
+      Tipo: equipmentItem.tipo,
+      'Status Geral': equipmentItem.statusGeral === 'ok' ? 'Em Dia' :
+                      equipmentItem.statusGeral === 'warning' ? 'Atenção' :
+                      equipmentItem.statusGeral === 'critical' ? 'Crítico' : 'Atrasado',
+      'Próxima Manutenção': equipmentItem.proximaManutencaoGeral?.toLocaleDateString('pt-BR') || '',
+      'Dias Restantes': equipmentItem.diasRestantesGeral ?? '',
     };
-    e.manutencoes.forEach(m => {
-      row[m.label] = m.proximaManutencao?.toLocaleDateString('pt-BR') || '';
-      row[`${m.label} - Status`] = m.status === 'ok' ? 'Em Dia' :
-                                    m.status === 'warning' ? 'Atenção' :
-                                    m.status === 'critical' ? 'Crítico' :
-                                    m.status === 'overdue' ? 'Atrasado' : 'Pendente';
+    equipmentItem.manutencoes.forEach(maintenanceRecord => {
+      row[maintenanceRecord.label] = maintenanceRecord.proximaManutencao?.toLocaleDateString('pt-BR') || '';
+      row[`${maintenanceRecord.label} - Status`] = maintenanceRecord.status === 'ok' ? 'Em Dia' :
+                                    maintenanceRecord.status === 'warning' ? 'Atenção' :
+                                    maintenanceRecord.status === 'critical' ? 'Crítico' :
+                                    maintenanceRecord.status === 'overdue' ? 'Atrasado' : 'Pendente';
     });
     return row;
   });

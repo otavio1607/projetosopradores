@@ -32,7 +32,7 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
   const [areaFilter, setAreaFilter] = useState<string>('all');
 
   const areas = useMemo(() => {
-    const unique = [...new Set(equipment.map(e => e.area))].sort();
+    const unique = [...new Set(equipment.map(equipmentItem => equipmentItem.area))].sort();
     return unique;
   }, [equipment]);
 
@@ -58,29 +58,29 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
   };
 
   const filteredEquipment = equipment
-    .filter(e => statusFilter === 'all' || e.statusGeral === statusFilter)
-    .filter(e => areaFilter === 'all' || e.area === areaFilter)
-    .filter(e => !searchTag || e.tag.toLowerCase().includes(searchTag.toLowerCase()))
-    .sort((a, b) => {
+    .filter(equipmentItem => statusFilter === 'all' || equipmentItem.statusGeral === statusFilter)
+    .filter(equipmentItem => areaFilter === 'all' || equipmentItem.area === areaFilter)
+    .filter(equipmentItem => !searchTag || equipmentItem.tag.toLowerCase().includes(searchTag.toLowerCase()))
+    .sort((itemA, itemB) => {
       let comparison = 0;
       switch (sortField) {
         case 'tag':
-          comparison = a.tag.localeCompare(b.tag);
+          comparison = itemA.tag.localeCompare(itemB.tag);
           break;
         case 'area':
-          comparison = a.area.localeCompare(b.area);
+          comparison = itemA.area.localeCompare(itemB.area);
           break;
         case 'elevacao':
-          comparison = a.elevacao - b.elevacao;
+          comparison = itemA.elevacao - itemB.elevacao;
           break;
         case 'diasRestantesGeral':
-          const aDays = a.diasRestantesGeral ?? 999;
-          const bDays = b.diasRestantesGeral ?? 999;
+          const aDays = itemA.diasRestantesGeral ?? 999;
+          const bDays = itemB.diasRestantesGeral ?? 999;
           comparison = aDays - bDays;
           break;
         case 'statusGeral':
           const statusOrder = { overdue: 0, critical: 1, warning: 2, ok: 3 };
-          comparison = statusOrder[a.statusGeral] - statusOrder[b.statusGeral];
+          comparison = statusOrder[itemA.statusGeral] - statusOrder[itemB.statusGeral];
           break;
       }
       return sortOrder === 'asc' ? comparison : -comparison;
@@ -155,20 +155,20 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
             </tr>
           </thead>
           <tbody>
-            {filteredEquipment.map((equip, index) => {
-              const isExpanded = expandedRows.has(equip.id);
-              const criticalServices = equip.manutencoes.filter(m => m.status === 'overdue' || m.status === 'critical');
+          {filteredEquipment.map((equipmentItem, index) => {
+              const isExpanded = expandedRows.has(equipmentItem.id);
+              const criticalServices = equipmentItem.manutencoes.filter(maintenanceRecord => maintenanceRecord.status === 'overdue' || maintenanceRecord.status === 'critical');
               
               return (
                 <>
                   <tr
-                    key={equip.id}
+                    key={equipmentItem.id}
                     className={cn(
                       'border-b border-border/50 transition-colors hover:bg-muted/30 cursor-pointer',
                       'animate-slide-in'
                     )}
                     style={{ animationDelay: `${index * 20}ms` }}
-                    onClick={() => toggleRow(equip.id)}
+                    onClick={() => toggleRow(equipmentItem.id)}
                   >
                     <td className="p-4">
                       {isExpanded ? (
@@ -180,25 +180,25 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                     <td className="p-4">
                       <div className="flex items-center gap-2">
                         <Wrench className="h-4 w-4 text-primary" />
-                        <span className="font-mono font-semibold text-foreground">{equip.tag}</span>
+                        <span className="font-mono font-semibold text-foreground">{equipmentItem.tag}</span>
                       </div>
                     </td>
                     <td className="p-4">
                       <span className="px-2 py-1 rounded bg-secondary text-secondary-foreground text-sm">
-                        {equip.area}
+                        {equipmentItem.area}
                       </span>
                     </td>
                     <td className="p-4 text-center">
                       <span className="px-2 py-1 rounded bg-primary/10 text-primary font-mono font-bold text-sm">
-                        {equip.elevacao}º
+                        {equipmentItem.elevacao}º
                       </span>
                     </td>
                     <td className="p-4">
-                      {equip.proximaManutencaoGeral ? (
+                      {equipmentItem.proximaManutencaoGeral ? (
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-primary" />
                           <span className="font-mono text-sm">
-                            {equip.proximaManutencaoGeral.toLocaleDateString('pt-BR')}
+                            {equipmentItem.proximaManutencaoGeral.toLocaleDateString('pt-BR')}
                           </span>
                         </div>
                       ) : (
@@ -206,10 +206,10 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                       )}
                     </td>
                     <td className="p-4 text-center">
-                      <DaysRemainingBadge days={equip.diasRestantesGeral} status={equip.statusGeral} />
+                      <DaysRemainingBadge days={equipmentItem.diasRestantesGeral} status={equipmentItem.statusGeral} />
                     </td>
                     <td className="p-4 text-center">
-                      <StatusBadge status={equip.statusGeral} />
+                      <StatusBadge status={equipmentItem.statusGeral} />
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-1">
@@ -219,7 +219,7 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                           </span>
                         )}
                         <span className="text-muted-foreground text-sm">
-                          {equip.manutencoes.length} tipos
+                          {equipmentItem.manutencoes.length} tipos
                         </span>
                       </div>
                     </td>
@@ -227,7 +227,7 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                   
                   {/* Expanded Row - Maintenance Details with Editing */}
                   {isExpanded && (
-                    <tr key={`${equip.id}-expanded`} className="bg-muted/20">
+                    <tr key={`${equipmentItem.id}-expanded`} className="bg-muted/20">
                       <td colSpan={8} className="p-0">
                         <div className="p-4">
                           <p className="text-xs text-muted-foreground mb-3 flex items-center gap-2">
@@ -235,11 +235,11 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                             Clique em um card para editar a data de manutenção
                           </p>
                           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                            {equip.manutencoes.map(m => (
+                            {equipmentItem.manutencoes.map(maintenanceRecord => (
                               <MaintenanceCard
-                                key={m.typeId}
-                                maintenance={m}
-                                equipmentId={equip.id}
+                                key={maintenanceRecord.typeId}
+                                maintenance={maintenanceRecord}
+                                equipmentId={equipmentItem.id}
                                 onDateChange={onMaintenanceDateChange}
                                 onComplete={onMaintenanceComplete}
                                 editable={!!onMaintenanceDateChange}
