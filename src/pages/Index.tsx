@@ -8,6 +8,8 @@ import { EquipmentManagerCard } from '@/components/EquipmentManagerCard';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
+import { AnnualPlanningGantt } from '@/components/AnnualPlanningGantt';
+import { PredictiveMonitoring } from '@/components/PredictiveMonitoring';
 import { 
   Gauge, 
   CheckCircle2, 
@@ -438,6 +440,19 @@ export default function Index() {
         {/* Timeline */}
         <div className="mb-6">
           <MaintenanceTimeline equipment={equipment} />
+        </div>
+
+        {/* Annual Planning Gantt */}
+        <div className="mb-6">
+          <AnnualPlanningGantt
+            equipment={equipment}
+            onMaintenanceDateChange={handleMaintenanceDateChange}
+          />
+        </div>
+
+        {/* Predictive Monitoring & Reliability */}
+        <div className="mb-6">
+          <PredictiveMonitoring equipment={equipment} />
         </div>
 
         <EquipmentManagerCard
