@@ -30,6 +30,7 @@ export interface Equipment {
   descricao: string;
   area: string;
   tipo: string;
+  lancaDanificada?: boolean;
   manutencoes: MaintenanceRecord[];
   statusGeral: 'ok' | 'warning' | 'critical' | 'overdue';
   proximaManutencaoGeral: Date | null;
