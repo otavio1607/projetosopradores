@@ -8,12 +8,11 @@ import {
   calculateOverdueRate,
   findRecurrentIssues,
 } from '@/lib/maintenanceCalculations';
-import { Equipment, MaintenanceRecord } from '@/lib/validationSchemas';
+import { Equipment, MaintenanceRecord } from '@/types/equipment';
 
 const mockMaintenanceRecord = (
   overrides?: Partial<MaintenanceRecord>
 ): MaintenanceRecord => ({
-  id: 'test-id',
   typeId: 'troca_cabos',
   label: 'Troca de Cabos',
   periodicidade: 'Anual',
@@ -21,8 +20,6 @@ const mockMaintenanceRecord = (
   proximaManutencao: null,
   diasRestantes: null,
   status: 'pending',
-  createdAt: new Date(),
-  updatedAt: new Date(),
   ...overrides,
 });
 
@@ -38,8 +35,6 @@ const mockEquipment = (overrides?: Partial<Equipment>): Equipment => ({
   statusGeral: 'ok',
   proximaManutencaoGeral: null,
   diasRestantesGeral: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
   ...overrides,
 });
 

@@ -45,7 +45,7 @@ export const auditService = {
     }
 
     try {
-      await supabase.from('audit_logs').insert({
+      await (supabase as any).from('audit_logs').insert({
         user_id: user.id,
         user_email: user.email,
         action,
@@ -65,7 +65,7 @@ export const auditService = {
    * Busca logs de auditoria para um recurso
    */
   async getByResource(resourceType: string, resourceId: string): Promise<AuditLog[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('audit_logs')
       .select('*')
       .eq('resource_type', resourceType)
@@ -92,7 +92,7 @@ export const auditService = {
    * Busca logs por usuário
    */
   async getByUser(userId: string, limit: number = 50): Promise<AuditLog[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('audit_logs')
       .select('*')
       .eq('user_id', userId)

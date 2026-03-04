@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
-import { Equipment } from '@/lib/validationSchemas';
+import { useState, useCallback, useEffect } from 'react';
+import { Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +83,7 @@ export function AdvancedFilters({ equipment, onFiltersChange }: AdvancedFiltersP
   }, [filters, equipment, onFiltersChange]);
 
   // Apply filters when they change
-  useState(() => {
+  useEffect(() => {
     applyFilters();
   }, [filters, applyFilters]);
 
