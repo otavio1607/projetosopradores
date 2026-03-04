@@ -2,6 +2,10 @@
 
 Sistema web para controle de manutenção preventiva de **177 sopradores de fuligem**, com exportação para Power BI, histórico CSV e download consolidado em ZIP.
 
+## 🌐 Acesse o Site
+
+> **👉 [https://otavio1607.github.io/projetosopradores/](https://otavio1607.github.io/projetosopradores/)**
+
 ---
 
 ## 🚀 Como Rodar no VS Code
@@ -10,7 +14,7 @@ Sistema web para controle de manutenção preventiva de **177 sopradores de fuli
 
 Deploy automático habilitado via workflow em `.github/workflows/deploy-pages.yml`.
 
-- URL esperada: `https://otavio1607.github.io/projetosopradores/`
+- URL: **[https://otavio1607.github.io/projetosopradores/](https://otavio1607.github.io/projetosopradores/)**
 - Após push na branch `main`, o deploy roda automaticamente.
 - No GitHub: **Settings → Pages → Source: GitHub Actions**.
 
