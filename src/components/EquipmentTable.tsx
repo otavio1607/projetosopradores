@@ -183,6 +183,11 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
                       <div className="flex items-center gap-2">
                         <Wrench className="h-4 w-4 text-primary" />
                         <span className="font-mono font-semibold text-foreground">{equip.tag}</span>
+                        {equip.lancaDanificada && (
+                          <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-status-critical/20 text-status-critical">
+                            Lança Danificada
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="p-4">

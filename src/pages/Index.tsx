@@ -203,6 +203,38 @@ export default function Index() {
     });
   }, []);
 
+  const handleEditEquipment = useCallback((
+    equipmentId: string,
+    updates: Partial<Pick<Equipment, 'elevacao' | 'altura' | 'area' | 'tipo' | 'descricao'>>
+  ) => {
+    setEquipment(prevEquipment => {
+      const updatedEquipment = prevEquipment.map(eq =>
+        eq.id === equipmentId ? { ...eq, ...updates } : eq
+      );
+      setStats(calculateStats(updatedEquipment));
+      setLastUpdate(new Date());
+      return updatedEquipment;
+    });
+    toast.success('Equipamento modificado com sucesso!');
+  }, []);
+
+  const handleMarkLancaDanificada = useCallback((equipmentId: string, danificada: boolean) => {
+    setEquipment(prevEquipment => {
+      const updatedEquipment = prevEquipment.map(eq =>
+        eq.id === equipmentId ? { ...eq, lancaDanificada: danificada } : eq
+      );
+      const eq = updatedEquipment.find(e => e.id === equipmentId);
+      if (eq) {
+        toast.success(danificada
+          ? `Lança do equipamento ${eq.tag} marcada como danificada.`
+          : `Marcação de lança danificada removida de ${eq.tag}.`
+        );
+      }
+      setLastUpdate(new Date());
+      return updatedEquipment;
+    });
+  }, []);
+
   const handleMaintenanceDateChange = useCallback((
     equipmentId: string, 
     typeId: MaintenanceTypeId, 
@@ -444,6 +476,8 @@ export default function Index() {
           equipment={equipment}
           onAddEquipment={handleAddEquipment}
           onDeleteEquipment={handleDeleteEquipment}
+          onEditEquipment={handleEditEquipment}
+          onMarkLancaDanificada={handleMarkLancaDanificada}
         />
 
         {/* Main Content Grid */}
