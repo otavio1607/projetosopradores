@@ -5,6 +5,7 @@ import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { EquipmentTable } from '@/components/EquipmentTable';
 import { EquipmentManagerCard } from '@/components/EquipmentManagerCard';
+import { DamagedLancesCard, DamagedLance } from '@/components/DamagedLancesCard';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
@@ -64,6 +65,7 @@ export default function Index() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+  const [damagedLances, setDamagedLances] = useState<DamagedLance[]>([]);
 
   const getPlanEquipmentLimit = useCallback((): number | null => {
     const license = LicenseService.getLocalLicense();
@@ -200,6 +202,35 @@ export default function Index() {
       setLastUpdate(new Date());
       toast.success(`Equipamento ${equipmentToDelete.tag} removido com sucesso!`);
       return updatedEquipment;
+    });
+  }, []);
+
+  const handleEditEquipment = useCallback((
+    equipmentId: string,
+    changes: Partial<Pick<Equipment, 'elevacao' | 'altura' | 'area' | 'tipo' | 'descricao'>>
+  ) => {
+    setEquipment(prevEquipment => {
+      const updatedEquipment = prevEquipment.map(eq =>
+        eq.id === equipmentId ? { ...eq, ...changes } : eq
+      );
+      setLastUpdate(new Date());
+      const tag = prevEquipment.find(eq => eq.id === equipmentId)?.tag ?? '';
+      toast.success(`Equipamento ${tag} atualizado com sucesso!`);
+      return updatedEquipment;
+    });
+  }, []);
+
+  const handleAddDamagedLance = useCallback((lance: DamagedLance) => {
+    setDamagedLances(prev => [...prev, lance]);
+    toast.success(`Lança danificada ${lance.tag} registrada!`);
+  }, []);
+
+  const handleDeleteDamagedLance = useCallback((lanceId: string) => {
+    setDamagedLances(prev => {
+      const lance = prev.find(l => l.id === lanceId);
+      const updated = prev.filter(l => l.id !== lanceId);
+      if (lance) toast.success(`Lança ${lance.tag} removida da lista de danificadas.`);
+      return updated;
     });
   }, []);
 
@@ -444,6 +475,14 @@ export default function Index() {
           equipment={equipment}
           onAddEquipment={handleAddEquipment}
           onDeleteEquipment={handleDeleteEquipment}
+          onEditEquipment={handleEditEquipment}
+        />
+
+        <DamagedLancesCard
+          equipment={equipment}
+          damagedLances={damagedLances}
+          onAddDamagedLance={handleAddDamagedLance}
+          onDeleteDamagedLance={handleDeleteDamagedLance}
         />
 
         {/* Main Content Grid */}

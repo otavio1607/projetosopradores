@@ -5,18 +5,21 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Pencil } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface EquipmentManagerCardProps {
   equipment: Equipment[];
   onAddEquipment: (equipment: Equipment) => void;
   onDeleteEquipment: (equipmentId: string) => void;
+  onEditEquipment: (equipmentId: string, changes: Partial<Pick<Equipment, 'elevacao' | 'altura' | 'area' | 'tipo' | 'descricao'>>) => void;
 }
 
 export function EquipmentManagerCard({
   equipment,
   onAddEquipment,
   onDeleteEquipment,
+  onEditEquipment,
 }: EquipmentManagerCardProps) {
   const [tag, setTag] = useState('');
   const [area, setArea] = useState('');
@@ -25,6 +28,13 @@ export function EquipmentManagerCard({
   const [altura, setAltura] = useState('0');
   const [descricao, setDescricao] = useState('');
   const [selectedDeleteId, setSelectedDeleteId] = useState<string>('');
+
+  const [selectedEditId, setSelectedEditId] = useState<string>('');
+  const [editArea, setEditArea] = useState('');
+  const [editTipo, setEditTipo] = useState('Rotativo');
+  const [editElevacao, setEditElevacao] = useState('');
+  const [editAltura, setEditAltura] = useState('');
+  const [editDescricao, setEditDescricao] = useState('');
 
   const sortedEquipment = useMemo(
     () => [...equipment].sort((a, b) => a.tag.localeCompare(b.tag)),
@@ -122,6 +132,36 @@ export function EquipmentManagerCard({
     if (!selectedDeleteId) return;
     onDeleteEquipment(selectedDeleteId);
     setSelectedDeleteId('');
+  };
+
+  const handleEditSelect = (id: string) => {
+    setSelectedEditId(id);
+    const eq = equipment.find(e => e.id === id);
+    if (eq) {
+      setEditArea(eq.area);
+      setEditTipo(eq.tipo);
+      setEditElevacao(String(eq.elevacao));
+      setEditAltura(String(eq.altura));
+      setEditDescricao(eq.descricao);
+    }
+  };
+
+  const handleEditSave = () => {
+    if (!selectedEditId) return;
+    const elevacaoNum = Number(editElevacao);
+    const alturaNum = Number(editAltura);
+    if (Number.isNaN(elevacaoNum) || Number.isNaN(alturaNum)) {
+      toast.error('Andar e Altura devem ser valores numéricos válidos.');
+      return;
+    }
+    onEditEquipment(selectedEditId, {
+      area: editArea.trim(),
+      tipo: editTipo,
+      elevacao: elevacaoNum,
+      altura: alturaNum,
+      descricao: editDescricao.trim(),
+    });
+    setSelectedEditId('');
   };
 
   return (
@@ -234,13 +274,13 @@ export function EquipmentManagerCard({
           <p className="text-sm text-muted-foreground">Remover equipamento</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Select value={selectedDeleteId} onValueChange={setSelectedDeleteId}>
-              <SelectTrigger className="w-full sm:w-[320px]">
+              <SelectTrigger className="w-full sm:w-[380px]">
                 <SelectValue placeholder="Selecione a TAG para excluir" />
               </SelectTrigger>
               <SelectContent>
                 {sortedEquipment.map(eq => (
                   <SelectItem key={eq.id} value={eq.id}>
-                    {eq.tag} • {eq.area}
+                    {eq.tag} • {eq.area} • Andar {eq.elevacao} • {eq.altura}m
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -248,6 +288,69 @@ export function EquipmentManagerCard({
             <Button type="button" variant="destructive" onClick={handleDelete} disabled={!selectedDeleteId}>
               Excluir Equipamento
             </Button>
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-lg border border-border p-4 bg-muted/20">
+          <div className="flex items-center gap-2">
+            <Pencil className="h-4 w-4 text-primary" />
+            <p className="text-sm font-semibold">Editar Equipamento (Andar / Altura / Área)</p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Select value={selectedEditId} onValueChange={handleEditSelect}>
+              <SelectTrigger className="w-full sm:w-[380px]">
+                <SelectValue placeholder="Selecione a TAG para editar" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortedEquipment.map(eq => (
+                  <SelectItem key={eq.id} value={eq.id}>
+                    {eq.tag} • {eq.area} • Andar {eq.elevacao} • {eq.altura}m
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedEditId && (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Input
+                  value={editArea}
+                  onChange={e => setEditArea(e.target.value)}
+                  placeholder="Área"
+                />
+                <Select value={editTipo} onValueChange={setEditTipo}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Rotativo">Rotativo</SelectItem>
+                    <SelectItem value="Retrátil">Retrátil</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  value={editElevacao}
+                  onChange={e => setEditElevacao(e.target.value)}
+                  placeholder="Andar (Elevação)"
+                  min={0}
+                  step={1}
+                />
+                <Input
+                  type="number"
+                  value={editAltura}
+                  onChange={e => setEditAltura(e.target.value)}
+                  placeholder="Altura (m)"
+                  min={0}
+                  step="0.1"
+                />
+                <Input
+                  value={editDescricao}
+                  onChange={e => setEditDescricao(e.target.value)}
+                  placeholder="Descrição"
+                />
+                <Button type="button" onClick={handleEditSave} disabled={!editArea.trim()}>
+                  Salvar Alterações
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
