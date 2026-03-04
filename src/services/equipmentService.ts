@@ -1,96 +1,35 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Equipment, MaintenanceRecord, MaintenanceHistory, Alert, MaintenanceStats } from '@/lib/validationSchemas';
-import { equipmentSchema, maintenanceRecordSchema, maintenanceHistorySchema, alertSchema } from '@/lib/validationSchemas';
+import { Equipment, MaintenanceRecord } from '@/types/equipment';
 import { calculateStats, getOverallStatus, getNextMaintenance } from '@/lib/maintenanceCalculations';
+import type { MaintenanceStats } from '@/types/equipment';
 
 /**
- * Service para operações com equipamentos
+ * Service para operações com equipamentos via Supabase
+ * Nota: As tabelas precisam ser criadas no banco antes de usar este service.
+ * Enquanto isso, o app usa dados do Excel (excelParser.ts).
  */
 export const equipmentService = {
-  /**
-   * Busca todos os equipamentos com suas manutenções
-   */
   async getAll(): Promise<Equipment[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('equipment')
-      .select(`
-        id,
-        tag,
-        elevacao,
-        altura,
-        descricao,
-        area,
-        tipo,
-        status_geral,
-        proxima_manutencao_geral,
-        dias_restantes_geral,
-        created_at,
-        updated_at,
-        maintenance_records (
-          id,
-          type_id,
-          label,
-          periodicidade,
-          ultima_manutencao,
-          proxima_manutencao,
-          dias_restantes,
-          status,
-          created_at,
-          updated_at
-        )
-      `);
-
+      .select('*');
     if (error) throw error;
-
-    return data.map(row => transformEquipmentRow(row));
+    return (data || []).map((row: any) => transformEquipmentRow(row));
   },
 
-  /**
-   * Busca um equipamento específico pelo ID
-   */
   async getById(id: string): Promise<Equipment | null> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('equipment')
-      .select(`
-        id,
-        tag,
-        elevacao,
-        altura,
-        descricao,
-        area,
-        tipo,
-        status_geral,
-        proxima_manutencao_geral,
-        dias_restantes_geral,
-        created_at,
-        updated_at,
-        maintenance_records (
-          id,
-          type_id,
-          label,
-          periodicidade,
-          ultima_manutencao,
-          proxima_manutencao,
-          dias_restantes,
-          status
-        )
-      `)
+      .select('*')
       .eq('id', id)
       .single();
-
     if (error) throw error;
     if (!data) return null;
-
     return transformEquipmentRow(data);
   },
 
-  /**
-   * Cria um novo equipamento
-   */
-  async create(equipment: Omit<Equipment, 'id' | 'createdAt' | 'updatedAt'>): Promise<Equipment> {
-    const validated = equipmentSchema.parse(equipment);
-
-    const { data, error } = await supabase
+  async create(equipment: Partial<Equipment>): Promise<Equipment> {
+    const { data, error } = await (supabase as any)
       .from('equipment')
       .insert({
         tag: equipment.tag,
@@ -102,17 +41,12 @@ export const equipmentService = {
       })
       .select()
       .single();
-
     if (error) throw error;
-
     return transformEquipmentRow(data);
   },
 
-  /**
-   * Atualiza um equipamento
-   */
   async update(id: string, updates: Partial<Equipment>): Promise<Equipment> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('equipment')
       .update({
         tag: updates.tag,
@@ -126,70 +60,46 @@ export const equipmentService = {
       .eq('id', id)
       .select()
       .single();
-
     if (error) throw error;
-
     return transformEquipmentRow(data);
   },
 
-  /**
-   * Deleta um equipamento
-   */
   async delete(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('equipment')
       .delete()
       .eq('id', id);
-
     if (error) throw error;
   },
 
-  /**
-   * Busca equipamentos por área
-   */
   async getByArea(area: string): Promise<Equipment[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('equipment')
       .select('*')
       .eq('area', area);
-
     if (error) throw error;
-
-    return data.map(row => transformEquipmentRow(row));
+    return (data || []).map((row: any) => transformEquipmentRow(row));
   },
 
-  /**
-   * Busca equipamentos por status
-   */
   async getByStatus(status: string): Promise<Equipment[]> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('equipment')
       .select('*')
       .eq('status_geral', status);
-
     if (error) throw error;
-
-    return data.map(row => transformEquipmentRow(row));
+    return (data || []).map((row: any) => transformEquipmentRow(row));
   },
 };
 
-/**
- * Service para operações com histórico de manutenção
- */
 export const maintenanceHistoryService = {
-  /**
-   * Busca histórico de um equipamento
-   */
-  async getByEquipmentId(equipmentId: string): Promise<MaintenanceHistory[]> {
-    const { data, error } = await supabase
+  async getByEquipmentId(equipmentId: string): Promise<any[]> {
+    const { data, error } = await (supabase as any)
       .from('maintenance_history')
       .select('*')
       .eq('equipment_id', equipmentId)
       .order('data_manutencao', { ascending: false });
-
     if (error) throw error;
-
-    return data.map(row => ({
+    return (data || []).map((row: any) => ({
       id: row.id,
       equipmentId: row.equipment_id,
       maintenanceTypeId: row.maintenance_type_id,
@@ -203,13 +113,8 @@ export const maintenanceHistoryService = {
     }));
   },
 
-  /**
-   * Registra uma manutenção realizada
-   */
-  async create(history: Omit<MaintenanceHistory, 'id' | 'createdAt' | 'updatedAt'>): Promise<MaintenanceHistory> {
-    const validated = maintenanceHistorySchema.parse(history);
-
-    const { data, error } = await supabase
+  async create(history: any): Promise<any> {
+    const { data, error } = await (supabase as any)
       .from('maintenance_history')
       .insert({
         equipment_id: history.equipmentId,
@@ -222,68 +127,20 @@ export const maintenanceHistoryService = {
       })
       .select()
       .single();
-
     if (error) throw error;
-
-    return {
-      id: data.id,
-      equipmentId: data.equipment_id,
-      maintenanceTypeId: data.maintenance_type_id,
-      dataManutencao: new Date(data.data_manutencao),
-      dataProxima: data.data_proxima ? new Date(data.data_proxima) : null,
-      realizadoPor: data.realizado_por,
-      notas: data.notas,
-      resultado: data.resultado,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
-    };
-  },
-
-  /**
-   * Busca histórico entre datas
-   */
-  async getByDateRange(startDate: Date, endDate: Date): Promise<MaintenanceHistory[]> {
-    const { data, error } = await supabase
-      .from('maintenance_history')
-      .select('*')
-      .gte('data_manutencao', startDate.toISOString().split('T')[0])
-      .lte('data_manutencao', endDate.toISOString().split('T')[0])
-      .order('data_manutencao', { ascending: false });
-
-    if (error) throw error;
-
-    return data.map(row => ({
-      id: row.id,
-      equipmentId: row.equipment_id,
-      maintenanceTypeId: row.maintenance_type_id,
-      dataManutencao: new Date(row.data_manutencao),
-      dataProxima: row.data_proxima ? new Date(row.data_proxima) : null,
-      realizadoPor: row.realizado_por,
-      notas: row.notas,
-      resultado: row.resultado,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    }));
+    return data;
   },
 };
 
-/**
- * Service para gerenciar alertas
- */
 export const alertService = {
-  /**
-   * Busca alertas não lidos
-   */
-  async getUnread(): Promise<Alert[]> {
-    const { data, error } = await supabase
+  async getUnread(): Promise<any[]> {
+    const { data, error } = await (supabase as any)
       .from('alerts')
       .select('*')
       .eq('lido', false)
       .order('created_at', { ascending: false });
-
     if (error) throw error;
-
-    return data.map(row => ({
+    return (data || []).map((row: any) => ({
       id: row.id,
       equipmentId: row.equipment_id,
       maintenanceTypeId: row.maintenance_type_id,
@@ -295,35 +152,24 @@ export const alertService = {
     }));
   },
 
-  /**
-   * Marca um alerta como lido
-   */
   async markAsRead(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('alerts')
       .update({ lido: true })
       .eq('id', id);
-
     if (error) throw error;
   },
 
-  /**
-   * Marca todos os alertas como lidos
-   */
   async markAllAsRead(): Promise<void> {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('alerts')
       .update({ lido: true })
       .eq('lido', false);
-
     if (error) throw error;
   },
 
-  /**
-   * Cria um alerta
-   */
-  async create(alert: Omit<Alert, 'id' | 'createdAt' | 'updatedAt'>): Promise<Alert> {
-    const { data, error } = await supabase
+  async create(alert: any): Promise<any> {
+    const { data, error } = await (supabase as any)
       .from('alerts')
       .insert({
         equipment_id: alert.equipmentId,
@@ -334,98 +180,53 @@ export const alertService = {
       })
       .select()
       .single();
-
     if (error) throw error;
-
-    return {
-      id: data.id,
-      equipmentId: data.equipment_id,
-      maintenanceTypeId: data.maintenance_type_id,
-      tipo: data.tipo,
-      mensagem: data.mensagem,
-      lido: data.lido,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
-    };
+    return data;
   },
 
-  /**
-   * Busca alertas de um equipamento específico
-   */
-  async getByEquipmentId(equipmentId: string): Promise<Alert[]> {
-    const { data, error } = await supabase
+  async getByEquipmentId(equipmentId: string): Promise<any[]> {
+    const { data, error } = await (supabase as any)
       .from('alerts')
       .select('*')
       .eq('equipment_id', equipmentId)
       .order('created_at', { ascending: false });
-
     if (error) throw error;
-
-    return data.map(row => ({
-      id: row.id,
-      equipmentId: row.equipment_id,
-      maintenanceTypeId: row.maintenance_type_id,
-      tipo: row.tipo,
-      mensagem: row.mensagem,
-      lido: row.lido,
-      createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
-    }));
+    return data || [];
   },
 };
 
-/**
- * Service para estatísticas
- */
 export const statsService = {
-  /**
-   * Calcula estatísticas de manutenção
-   */
   async getStats(): Promise<MaintenanceStats> {
     const equipment = await equipmentService.getAll();
     return calculateStats(equipment);
   },
 
-  /**
-   * Calcula taxa de atraso
-   */
   async getOverdueRate(): Promise<number> {
     const equipment = await equipmentService.getAll();
     const overdue = equipment.filter(e => e.statusGeral === 'overdue').length;
     return equipment.length > 0 ? (overdue / equipment.length) * 100 : 0;
   },
 
-  /**
-   * Busca equipamentos mais críticos
-   */
   async getMostCritical(limit: number = 10): Promise<Equipment[]> {
     const equipment = await equipmentService.getAll();
     const statusPriority = { overdue: 0, critical: 1, warning: 2, ok: 3 };
     return equipment
-      .sort(
-        (a, b) =>
-          statusPriority[a.statusGeral as keyof typeof statusPriority] -
-          statusPriority[b.statusGeral as keyof typeof statusPriority]
+      .sort((a, b) =>
+        (statusPriority[a.statusGeral] || 3) - (statusPriority[b.statusGeral] || 3)
       )
       .slice(0, limit);
   },
 };
 
-/**
- * Função auxiliar para transformar dados do Supabase
- */
 function transformEquipmentRow(row: any): Equipment {
   const manutencoes: MaintenanceRecord[] = (row.maintenance_records || []).map((m: any) => ({
-    id: m.id,
-    typeId: m.type_id,
+    typeId: m.type_id || m.typeId,
     label: m.label,
     periodicidade: m.periodicidade,
     ultimaManutencao: m.ultima_manutencao ? new Date(m.ultima_manutencao) : null,
     proximaManutencao: m.proxima_manutencao ? new Date(m.proxima_manutencao) : null,
     diasRestantes: m.dias_restantes,
     status: m.status,
-    createdAt: new Date(m.created_at),
-    updatedAt: new Date(m.updated_at),
   }));
 
   return {
@@ -433,14 +234,12 @@ function transformEquipmentRow(row: any): Equipment {
     tag: row.tag,
     elevacao: row.elevacao,
     altura: row.altura,
-    descricao: row.descricao,
+    descricao: row.descricao || '',
     area: row.area,
     tipo: row.tipo,
     manutencoes,
-    statusGeral: row.status_geral,
+    statusGeral: row.status_geral || 'ok',
     proximaManutencaoGeral: row.proxima_manutencao_geral ? new Date(row.proxima_manutencao_geral) : null,
-    diasRestantesGeral: row.dias_restantes_geral,
-    createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    diasRestantesGeral: row.dias_restantes_geral ?? null,
   };
 }

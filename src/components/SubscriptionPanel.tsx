@@ -63,7 +63,7 @@ export function SubscriptionPanel({ userId, onSubscriptionChanged }: Subscriptio
     if (!subscription) return;
 
     try {
-      await PaymentService.cancelSubscription(subscription.id);
+      await LicenseService.cancelSubscription(subscription.id);
       setSubscription(null);
       onSubscriptionChanged?.(null as any);
     } catch (err) {

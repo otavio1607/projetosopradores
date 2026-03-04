@@ -1,4 +1,4 @@
-import { Equipment } from '@/lib/validationSchemas';
+import { Equipment } from '@/types/equipment';
 import {
   BarChart,
   Bar,
