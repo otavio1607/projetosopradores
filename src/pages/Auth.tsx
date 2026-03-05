@@ -183,21 +183,8 @@ export default function Auth() {
                       )}
                     </div>
 
-                    {/* Limites */}
                     <div className="space-y-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                        <span className="text-foreground">
-                          {plan.maxEquipment >= 400 ? 'Até 400' : `Até ${plan.maxEquipment}`} equipamentos
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                        <span className="text-foreground">
-                          {plan.maxUsers >= 99 ? 'Usuários ilimitados' : `${plan.maxUsers} usuário${plan.maxUsers > 1 ? 's' : ''}`}
-                        </span>
-                      </div>
-                      {plan.features.filter(f => f.included).slice(0, 5).map((feature, i) => (
+                      {plan.features.filter(f => f.included).map((feature, i) => (
                         <div key={i} className="flex items-center gap-2">
                           <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
                           <span className="text-foreground">{feature.name}</span>
@@ -214,7 +201,7 @@ export default function Auth() {
                         toast.info(`Plano ${plan.name} selecionado. Crie sua conta para começar!`);
                       }}
                     >
-                      {plan.price <= 80 ? 'Começar Agora' : 'Escolher Plano'}
+                      {plan.price <= 130 ? 'Começar Agora' : 'Escolher Plano'}
                     </Button>
                   </CardContent>
                 </Card>
