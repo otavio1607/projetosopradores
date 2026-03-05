@@ -1,4 +1,4 @@
-import { Equipment } from '@/types/equipment';
+import { Equipment, ServiceOrder } from '@/types/equipment';
 
 const STORAGE_KEY = 'sopradores_equipment_v1';
 
@@ -61,4 +61,49 @@ export function loadEquipmentStorage(): Equipment[] | null {
 /** Removes the stored equipment list from localStorage. */
 export function clearEquipmentStorage(): void {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+// ─── Service Orders ──────────────────────────────────────────────────────────
+
+const OS_STORAGE_KEY = 'sopradores_os_v1';
+
+function serializeOrders(orders: ServiceOrder[]) {
+  return orders.map(o => ({
+    ...o,
+    dataCriacao: o.dataCriacao.toISOString(),
+    dataPrevista: o.dataPrevista ? o.dataPrevista.toISOString() : null,
+    dataConclusao: o.dataConclusao ? o.dataConclusao.toISOString() : null,
+  }));
+}
+
+type SerializedOrder = ReturnType<typeof serializeOrders>[number];
+
+function deserializeOrders(raw: SerializedOrder[]): ServiceOrder[] {
+  return raw.map(o => ({
+    ...o,
+    dataCriacao: new Date(o.dataCriacao),
+    dataPrevista: o.dataPrevista ? new Date(o.dataPrevista) : null,
+    dataConclusao: o.dataConclusao ? new Date(o.dataConclusao) : null,
+  }));
+}
+
+export function saveOrdersStorage(orders: ServiceOrder[]): void {
+  try {
+    localStorage.setItem(OS_STORAGE_KEY, JSON.stringify(serializeOrders(orders)));
+  } catch (err) {
+    console.warn('[storage] Failed to save service orders:', err);
+  }
+}
+
+export function loadOrdersStorage(): ServiceOrder[] | null {
+  try {
+    const raw = localStorage.getItem(OS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed: SerializedOrder[] = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return deserializeOrders(parsed);
+  } catch (err) {
+    console.warn('[storage] Failed to load service orders:', err);
+    return null;
+  }
 }

@@ -46,6 +46,26 @@ export interface MaintenanceStats {
 
 export type StatusFilter = 'all' | 'ok' | 'warning' | 'critical' | 'overdue';
 
+export type ServiceOrderStatus = 'aberta' | 'em_andamento' | 'concluida' | 'cancelada';
+export type ServiceOrderPriority = 'baixa' | 'media' | 'alta' | 'urgente';
+
+export interface ServiceOrder {
+  id: string;
+  numero: string;
+  equipmentId: string;
+  equipmentTag: string;
+  area: string;
+  tipoManutencao: string;
+  descricao: string;
+  responsavel: string;
+  status: ServiceOrderStatus;
+  prioridade: ServiceOrderPriority;
+  dataCriacao: Date;
+  dataPrevista: Date | null;
+  dataConclusao: Date | null;
+  observacoes: string;
+}
+
 // Mapeamento completo de elevações e alturas para cada soprador (fallback para dados de amostra)
 export const ELEVATION_DATA: Record<number, { elev: number; altura: number; area: string; tipo: string }> = {
   // Caldeira SPD 101-130
