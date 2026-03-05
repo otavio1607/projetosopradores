@@ -1,10 +1,11 @@
 import { Equipment, StatusFilter, MaintenanceTypeId } from '@/types/equipment';
 import { cn } from '@/lib/utils';
-import { Calendar, Clock, Wrench, ArrowUpDown, ChevronDown, ChevronRight, Search, Filter } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { Calendar, Clock, Wrench, ArrowUpDown, ChevronDown, ChevronRight, Search, Filter, X, ChevronsUpDown } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { MaintenanceCard } from './MaintenanceCard';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 
 interface EquipmentTableProps {
   equipment: Equipment[];
@@ -30,6 +31,24 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [searchTag, setSearchTag] = useState('');
   const [areaFilter, setAreaFilter] = useState<string>('all');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Press '/' to focus the search input (unless focus is already on an input/textarea)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === '/' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA' &&
+        document.activeElement?.tagName !== 'SELECT'
+      ) {
+        e.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const areas = useMemo(() => {
     const unique = [...new Set(equipment.map(e => e.area))].sort();
@@ -88,6 +107,24 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
       return sortOrder === 'asc' ? comparison : -comparison;
     });
 
+  const allExpanded =
+    filteredEquipment.length > 0 && filteredEquipment.every(e => expandedRows.has(e.id));
+
+  const toggleAll = () => {
+    if (allExpanded) {
+      setExpandedRows(new Set());
+    } else {
+      setExpandedRows(new Set(filteredEquipment.map(e => e.id)));
+    }
+  };
+
+  const hasActiveFilters = searchTag !== '' || areaFilter !== 'all';
+
+  const clearFilters = () => {
+    setSearchTag('');
+    setAreaFilter('all');
+  };
+
   const SortButton = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <button
       onClick={() => handleSort(field)}
@@ -108,7 +145,8 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Buscar por TAG (ex: SPD-101)"
+            ref={searchInputRef}
+            placeholder="Buscar por TAG (ex: SPD-101) — pressione / para focar"
             value={searchTag}
             onChange={e => setSearchTag(e.target.value)}
             className="pl-9 bg-muted/50 border-border"
@@ -126,6 +164,27 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
             ))}
           </SelectContent>
         </Select>
+        {hasActiveFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="gap-1 text-muted-foreground hover:text-foreground shrink-0"
+          >
+            <X className="h-4 w-4" />
+            Limpar filtros
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleAll}
+          className="gap-1 text-muted-foreground hover:text-foreground shrink-0"
+          title={allExpanded ? 'Recolher todos' : 'Expandir todos'}
+        >
+          <ChevronsUpDown className="h-4 w-4" />
+          {allExpanded ? 'Recolher' : 'Expandir'}
+        </Button>
       </div>
 
       <div className="overflow-x-auto">
@@ -263,6 +322,18 @@ export function EquipmentTable({ equipment, statusFilter, onMaintenanceDateChang
         <div className="p-12 text-center text-muted-foreground">
           <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>Nenhum equipamento encontrado com o filtro selecionado.</p>
+        </div>
+      )}
+
+      {/* Result count footer */}
+      {filteredEquipment.length > 0 && (
+        <div className="px-4 py-2 border-t border-border text-xs text-muted-foreground text-center">
+          Exibindo{' '}
+          <span className="font-semibold text-foreground">{filteredEquipment.length}</span>
+          {filteredEquipment.length !== equipment.length && (
+            <> de <span className="font-semibold text-foreground">{equipment.length}</span></>
+          )}{' '}
+          equipamento{filteredEquipment.length !== 1 ? 's' : ''}
         </div>
       )}
     </div>
