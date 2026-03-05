@@ -162,9 +162,8 @@ export function BillingPage({ userId, currentLicense }: BillingPageProps) {
 export default function Billing() {
   const { user } = useAuth();
 
-  if (!user) {
-    return null;
-  }
+  // When Supabase is not configured, render the billing page without a real user
+  const userId = user?.id ?? 'local-user';
 
-  return <BillingPage userId={user.id} />;
+  return <BillingPage userId={userId} />;
 }
