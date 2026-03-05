@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Equipment, MaintenanceStats, StatusFilter, MaintenanceTypeId, MAINTENANCE_TYPES } from '@/types/equipment';
 import { loadDefaultData, parseExcelFile, calculateStats, exportToPowerBI, exportToPowerBIData, exportHistoryCSV } from '@/utils/excelParser';
+import { saveEquipmentStorage, loadEquipmentStorage, clearEquipmentStorage } from '@/utils/localStorageUtils';
 import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { EquipmentTable } from '@/components/EquipmentTable';
@@ -95,11 +96,17 @@ export default function Index() {
     [getPlanEquipmentLimit]
   );
 
+  // Tracks whether the initial localStorage check has already run so subsequent
+  // dataSourcePath changes always reload from the source file.
+  const initialCheckDoneRef = useRef(false);
+
   const loadData = useCallback(async (preferredPath?: string) => {
     setIsLoading(true);
     try {
       const rawData = await loadDefaultData(preferredPath || dataSourcePath);
       const data = applyEquipmentLimit(rawData, 'Carregamento padrão');
+      // Clear saved state so the fresh data takes effect
+      clearEquipmentStorage();
       setEquipment(data);
       setStats(calculateStats(data));
       setLastUpdate(new Date());
@@ -112,14 +119,40 @@ export default function Index() {
     }
   }, [dataSourcePath, applyEquipmentLimit]);
 
+  // On first mount: restore from localStorage; on subsequent changes: reload from source.
   useEffect(() => {
+    if (!initialCheckDoneRef.current) {
+      initialCheckDoneRef.current = true;
+      const saved = loadEquipmentStorage();
+      if (saved) {
+        setEquipment(saved);
+        setStats(calculateStats(saved));
+        setLastUpdate(new Date());
+        setIsLoading(false);
+        toast.info(`${saved.length} equipamentos restaurados da sessão anterior`);
+        return;
+      }
+    }
     loadData(dataSourcePath);
   }, [dataSourcePath, loadData]);
+
+  // Persist equipment changes to localStorage (skip while loading)
+  useEffect(() => {
+    if (!isLoading && equipment.length > 0) {
+      saveEquipmentStorage(equipment);
+    }
+  }, [equipment, isLoading]);
 
   const handleDataSourceChange = useCallback((path: string) => {
     setDataSourcePath(path);
     toast.info('Fonte de dados alterada. Recarregando planilha...');
   }, []);
+
+  const handleReset = useCallback(() => {
+    clearEquipmentStorage();
+    loadData(dataSourcePath);
+    toast.info('Dados redefinidos para a fonte original');
+  }, [dataSourcePath, loadData]);
 
   const handleImport = async (file: File) => {
     setIsLoading(true);
@@ -308,6 +341,7 @@ export default function Index() {
         onImport={handleImport}
         onRefresh={() => loadData(dataSourcePath)}
         onDataSourceChange={handleDataSourceChange}
+        onReset={handleReset}
         dataSourcePath={dataSourcePath}
         onGetExportData={() => exportToPowerBIData(equipment)}
         lastUpdate={lastUpdate}

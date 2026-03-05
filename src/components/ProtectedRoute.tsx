@@ -1,10 +1,28 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { isSupabaseConfigured } from '@/integrations/supabase/client';
+import { Loader2, Info } from 'lucide-react';
 import { ReactNode } from 'react';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
+
+  // When Supabase is not configured (missing env vars), allow access without authentication.
+  // The app works as a standalone local tool — display an informational banner so users
+  // know they are running in standalone mode without account protection.
+  if (!isSupabaseConfigured) {
+    return (
+      <>
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 flex items-center gap-2 text-amber-800 text-xs">
+          <Info className="h-4 w-4 flex-shrink-0" />
+          <span>
+            Modo autônomo — autenticação desativada (variáveis de ambiente Supabase não configuradas).
+          </span>
+        </div>
+        {children}
+      </>
+    );
+  }
 
   if (loading) {
     return (

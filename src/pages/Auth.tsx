@@ -6,12 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Flame, LogIn, UserPlus, Loader2, Copy, Check, Shield, Zap, Crown, CreditCard, Smartphone, Building2 } from 'lucide-react';
+import { Flame, LogIn, UserPlus, Loader2, Copy, Check, Shield, Zap, Crown, CreditCard, Smartphone, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { plans, paymentMethods } from '@/lib/paymentPlans';
 
 export default function Auth() {
   const pixKey = '14997525748';
+  const accessUrl = 'https://otavio1607.github.io/projetosopradores/';
+  const [copiedUrl, setCopiedUrl] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,16 @@ export default function Auth() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
+
+  const handleCopyUrl = () => {
+    navigator.clipboard.writeText(accessUrl).then(() => {
+      setCopiedUrl(true);
+      toast.success('Link de acesso copiado!');
+      setTimeout(() => setCopiedUrl(false), 2000);
+    }).catch(() => {
+      toast.error('Não foi possível copiar. Copie manualmente: ' + accessUrl);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,17 +92,41 @@ export default function Auth() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
       {/* Hero Header */}
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10 border border-primary/30">
-            <Flame className="h-6 w-6 text-primary" />
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 border border-primary/30">
+              <Flame className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-foreground">
+                Sopradores de Fuligem
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                Sistema de Manutenção Preventiva Industrial
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-foreground">
-              Sopradores de Fuligem
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Sistema de Manutenção Preventiva Industrial
-            </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 hidden sm:flex"
+              onClick={handleCopyUrl}
+            >
+              {copiedUrl ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              <span className="text-xs font-mono truncate max-w-[180px]" title={accessUrl}>{accessUrl}</span>
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="gap-2"
+              asChild
+            >
+              <a href={accessUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4" />
+                <span className="hidden sm:inline">Acessar Sistema</span>
+              </a>
+            </Button>
           </div>
         </div>
       </header>
@@ -105,6 +141,26 @@ export default function Auth() {
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
             Controle completo dos sopradores de fuligem da sua caldeira. 
             Prevenção de falhas, relatórios automatizados e integração com Power BI.
+          </p>
+          {/* Link de acesso direto */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <a
+              href={accessUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-sm shadow hover:bg-primary/90 transition-colors"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Acessar o Sistema
+            </a>
+            <Button variant="outline" size="default" className="gap-2" onClick={handleCopyUrl}>
+              {copiedUrl ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              {copiedUrl ? 'Link Copiado!' : 'Copiar Link de Acesso'}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            <span aria-hidden="true">🌐</span>{' '}
+            <a href={accessUrl} className="underline hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">{accessUrl}</a>
           </p>
         </section>
 

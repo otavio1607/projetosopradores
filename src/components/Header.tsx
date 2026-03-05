@@ -1,4 +1,4 @@
-import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User, CreditCard } from 'lucide-react';
+import { Flame, Download, Upload, RefreshCw, Archive, FileSpreadsheet, LogOut, User, CreditCard, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import JSZip from 'jszip';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ interface HeaderProps {
   onImport: (file: File) => void;
   onRefresh: () => void;
   onDataSourceChange: (path: string) => void;
+  onReset: () => void;
   dataSourcePath: string;
   onGetExportData: () => Uint8Array;
   lastUpdate: Date;
@@ -22,6 +23,7 @@ export function Header({
   onImport,
   onRefresh,
   onDataSourceChange,
+  onReset,
   dataSourcePath,
   onGetExportData,
   lastUpdate,
@@ -106,6 +108,17 @@ export function Header({
             >
               <RefreshCw className="h-4 w-4" />
               Atualizar
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onReset}
+              className="gap-2 text-muted-foreground hover:text-destructive"
+              title="Limpar dados salvos e recarregar da fonte original"
+            >
+              <RotateCcw className="h-4 w-4" />
+              Resetar
             </Button>
 
             <Button
