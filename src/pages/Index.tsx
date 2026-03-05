@@ -280,6 +280,26 @@ export default function Index() {
     toast.success(`Manutenção "${maintenanceType.label}" concluída! Próxima em ${maintenanceType.periodicidade} (${nextDate.toLocaleDateString('pt-BR')})`);
   }, [handleMaintenanceDateChange]);
 
+  const handleAddEquipment = useCallback((newEquipment: Equipment) => {
+    setEquipment(prev => {
+      const updated = [...prev, newEquipment];
+      setStats(calculateStats(updated));
+      setLastUpdate(new Date());
+      return updated;
+    });
+    toast.success(`Equipamento ${newEquipment.tag} adicionado com sucesso!`);
+  }, []);
+
+  const handleDeleteEquipment = useCallback((equipmentId: string) => {
+    setEquipment(prev => {
+      const updated = prev.filter(e => e.id !== equipmentId);
+      setStats(calculateStats(updated));
+      setLastUpdate(new Date());
+      return updated;
+    });
+    toast.success('Equipamento removido com sucesso!');
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -456,6 +476,8 @@ export default function Index() {
                 statusFilter={statusFilter}
                 onMaintenanceDateChange={handleMaintenanceDateChange}
                 onMaintenanceComplete={handleMaintenanceComplete}
+                onAddEquipment={handleAddEquipment}
+                onDeleteEquipment={handleDeleteEquipment}
               />
             </div>
           </div>
