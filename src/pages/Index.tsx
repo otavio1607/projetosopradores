@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Equipment, MaintenanceStats, StatusFilter, MaintenanceTypeId, MAINTENANCE_TYPES } from '@/types/equipment';
+import { Equipment, MaintenanceStats, StatusFilter, MaintenanceTypeId, MAINTENANCE_TYPES, ServiceOrder } from '@/types/equipment';
 import { loadDefaultData, parseExcelFile, calculateStats, exportToPowerBI, exportToPowerBIData, exportHistoryCSV } from '@/utils/excelParser';
-import { saveEquipmentStorage, loadEquipmentStorage, clearEquipmentStorage } from '@/utils/localStorageUtils';
+import { saveEquipmentStorage, loadEquipmentStorage, clearEquipmentStorage, saveOrdersStorage, loadOrdersStorage } from '@/utils/localStorageUtils';
 import { Header } from '@/components/Header';
 import { StatCard } from '@/components/StatCard';
 import { EquipmentTable } from '@/components/EquipmentTable';
 import { EquipmentManagerCard } from '@/components/EquipmentManagerCard';
 import { DamagedLancesCard, DamagedLance } from '@/components/DamagedLancesCard';
+import { ServiceOrdersCard } from '@/components/ServiceOrdersCard';
 import { MaintenanceCalendar } from '@/components/MaintenanceCalendar';
 import { MaintenanceTimeline } from '@/components/MaintenanceTimeline';
 import { ElevationChart } from '@/components/ElevationChart';
@@ -69,6 +70,7 @@ export default function Index() {
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [damagedLances, setDamagedLances] = useState<DamagedLance[]>([]);
+  const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>(() => loadOrdersStorage() ?? []);
 
   const getPlanEquipmentLimit = useCallback((): number | null => {
     const license = LicenseService.getLocalLicense();
@@ -267,6 +269,23 @@ export default function Index() {
       if (lance) toast.success(`Lança ${lance.tag} removida da lista de danificadas.`);
       return updated;
     });
+  }, []);
+
+  // Persist service orders to localStorage
+  useEffect(() => {
+    saveOrdersStorage(serviceOrders);
+  }, [serviceOrders]);
+
+  const handleAddOrder = useCallback((order: ServiceOrder) => {
+    setServiceOrders(prev => [...prev, order]);
+  }, []);
+
+  const handleUpdateOrder = useCallback((orderId: string, changes: Partial<ServiceOrder>) => {
+    setServiceOrders(prev => prev.map(o => o.id === orderId ? { ...o, ...changes } : o));
+  }, []);
+
+  const handleDeleteOrder = useCallback((orderId: string) => {
+    setServiceOrders(prev => prev.filter(o => o.id !== orderId));
   }, []);
 
   const handleMaintenanceDateChange = useCallback((
@@ -532,6 +551,14 @@ export default function Index() {
           damagedLances={damagedLances}
           onAddDamagedLance={handleAddDamagedLance}
           onDeleteDamagedLance={handleDeleteDamagedLance}
+        />
+
+        <ServiceOrdersCard
+          equipment={equipment}
+          orders={serviceOrders}
+          onAddOrder={handleAddOrder}
+          onUpdateOrder={handleUpdateOrder}
+          onDeleteOrder={handleDeleteOrder}
         />
 
         {/* Main Content Grid */}
